@@ -1,0 +1,15 @@
+<div *ngIf="ticket; else notFound" class="p-4">
+  <h2 class="text-xl font-bold mb-2">Resolviendo Ticket: {{ ticket.title }}</h2>
+  <p class="mb-4">{{ ticket.description }}</p>
+
+  <label class="block mb-2">Comentario de resolución:</label>
+  <textarea [(ngModel)]="resolutionComment" class="w-full p-2 border rounded mb-4"></textarea>
+
+  <button (click)="resolveTicket()" class="bg-green-600 text-white px-4 py-2 rounded">
+    Marcar como Resuelto
+  </button>
+</div>
+
+<ng-template #notFound>
+  <p class="text-red-500">Ticket no encontrado.</p>
+</ng-template>

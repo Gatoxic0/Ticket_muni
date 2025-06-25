@@ -1,0 +1,171 @@
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+  <div class="space-y-4">
+    <!-- Filter Section -->
+    <div class="bg-white rounded-lg border border-gray-200 p-4 mb-6">
+      <div class="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+        <div class="flex flex-wrap gap-2">
+          <button 
+            class="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md border transition-colors"
+            [ngClass]="statusFilter === 'all' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'"
+            (click)="statusFilter = 'all'">
+            Todos
+            <span class="px-1.5 py-0.5 text-xs bg-gray-100 text-gray-800 rounded">
+              {{ getTotalCount() | async }}
+            </span>
+          </button>
+
+          <button 
+            class="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md border transition-colors"
+            [ngClass]="statusFilter === 'open' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'"
+            (click)="statusFilter = 'open'">
+            <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+            Abiertos
+            <span class="px-1.5 py-0.5 text-xs bg-gray-100 text-gray-800 rounded">
+              {{ getStatusCount('open') | async }}
+            </span>
+          </button>
+
+          <button 
+            class="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md border transition-colors"
+            [ngClass]="statusFilter === 'in-progress' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'"
+            (click)="statusFilter = 'in-progress'">
+            <div class="w-2 h-2 bg-yellow-500 rounded-full"></div>
+            En Progreso
+            <span class="px-1.5 py-0.5 text-xs bg-gray-100 text-gray-800 rounded">
+              {{ getStatusCount('in-progress') | async }}
+            </span>
+          </button>
+
+          <button 
+            class="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md border transition-colors"
+            [ngClass]="statusFilter === 'resolved' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'"
+            (click)="statusFilter = 'resolved'">
+            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+            Resueltos
+            <span class="px-1.5 py-0.5 text-xs bg-gray-100 text-gray-800 rounded">
+              {{ getStatusCount('resolved') | async }}
+            </span>
+          </button>
+        </div>
+
+        <div class="flex gap-2 w-full lg:w-auto">
+          <div class="relative flex-1 lg:w-80">
+            <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+            <input 
+              type="text"
+              placeholder="Buscar tickets..."
+              [(ngModel)]="searchQuery"
+              class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          </div>
+
+          <button 
+            routerLink="/create-ticket"
+            class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+            </svg>
+            Nuevo
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Info for regular users -->
+    <div *ngIf="(currentUser$ | async)?.role === 'user'" class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+      <h3 class="text-sm font-medium text-blue-900 mb-1">
+        Mis Tickets - {{ (currentUser$ | async)?.name }}
+      </h3>
+      <p class="text-xs text-blue-700">
+        Aquí puedes ver el estado de todas tus solicitudes al equipo de IT
+      </p>
+    </div>
+
+    <!-- Tickets Table -->
+    <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+<thead class="bg-gray-50">
+  <tr>
+    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ticket</th>
+    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Asunto</th>
+    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">De</th>
+    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prioridad</th>
+    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+    <th 
+      *ngIf="(currentUser$ | async)?.role === 'admin'"
+      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+      Acción
+    </th>
+  </tr>
+</thead>
+<tbody class="bg-white divide-y divide-gray-200">
+  <tr *ngFor="let ticket of getFilteredTickets() | async" class="hover:bg-gray-50 transition-colors">
+    <td class="px-6 py-4 whitespace-nowrap">
+      <div class="flex items-center gap-2">
+        <div 
+          class="w-2 h-2 rounded-full"
+          [ngClass]="{
+            'bg-blue-500': ticket.status === 'open',
+            'bg-yellow-500': ticket.status === 'in-progress',
+            'bg-green-500': ticket.status === 'resolved',
+            'bg-gray-500': ticket.status === 'closed'
+          }">
+        </div>
+        <span class="font-medium text-blue-600">#{{ ticket.id }}</span>
+      </div>
+    </td>
+    <td class="px-6 py-4">
+      <p class="font-medium text-gray-900 truncate max-w-xs">{{ ticket.title }}</p>
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap">
+      <div class="text-sm">
+        <p class="font-medium text-gray-900">{{ ticket.requester }}</p>
+        <p class="text-gray-500">{{ ticket.department }}</p>
+      </div>
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap">
+      <span 
+        class="badge"
+        [ngClass]="getPriorityColor(ticket.priority)">
+        {{ getPriorityText(ticket.priority) }}
+      </span>
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap">
+      <span 
+        class="badge"
+        [ngClass]="getStatusColor(ticket.status)">
+        {{ getStatusText(ticket.status) }}
+      </span>
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+      {{ formatDate(ticket.createdAt) }}
+    </td>
+
+    <!-- ACCIÓN - Solo visible para ADMIN -->
+    <td class="px-6 py-4 whitespace-nowrap" *ngIf="(currentUser$ | async)?.role === 'admin'">
+      <button 
+        *ngIf="ticket.status !== 'resolved'"
+        [routerLink]="['/resolve-ticket', ticket.id]"
+        class="text-sm text-blue-600 hover:underline">
+        Ver detalles
+      </button>
+    </td>
+  </tr>
+</tbody>
+
+        </table>
+      </div>
+
+      <!-- Empty state -->
+      <div *ngIf="(getFilteredTickets() | async)?.length === 0" class="p-8 text-center">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg>
+        <p class="mt-2 text-gray-500">No se encontraron tickets</p>
+      </div>
+    </div>
+  </div>
+</main>
