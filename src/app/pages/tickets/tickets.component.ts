@@ -3,9 +3,10 @@ import { CommonModule } from "@angular/common"
 import { FormsModule } from "@angular/forms"
 import { RouterModule } from "@angular/router"
 import { TicketService } from "../../services/ticket.service"
-import { Ticket, User } from "../../models/ticket.model"
+import { Ticket } from "../../models/ticket.model"
 import { Observable } from "rxjs"
 import { map, switchMap } from "rxjs/operators"
+import { User } from "../../models/user.model"
 
 @Component({
   selector: "app-tickets",
@@ -23,7 +24,7 @@ export class TicketsComponent implements OnInit {
 
   constructor(private ticketService: TicketService) {
     this.currentUser$ = this.ticketService.getCurrentUser()
-    this.isAdmin$ = this.currentUser$.pipe(map(user => user.role === 'admin'))
+    this.isAdmin$ = this.currentUser$.pipe(map((user) => user.role === "admin"))
     this.tickets$ = this.getVisibleTickets()
   }
 
@@ -48,7 +49,8 @@ export class TicketsComponent implements OnInit {
           const matchesSearch =
             ticket.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
             ticket.requester.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-            ticket.id.includes(this.searchQuery)
+            ticket.id.includes(this.searchQuery) ||
+            (ticket.assignee && ticket.assignee.toLowerCase().includes(this.searchQuery.toLowerCase()))
 
           const matchesStatus = this.statusFilter === "all" || ticket.status === this.statusFilter
 
@@ -114,5 +116,58 @@ export class TicketsComponent implements OnInit {
       low: "badge-green",
     }
     return colorMap[priority] || "badge-gray"
+  }
+
+  getAssigneeInitials(assignee: string): string {
+    if (!assignee) return "SA"
+
+    // Si es un email, extraer el nombre antes del @
+    if (assignee.includes("@")) {
+      const name = assignee.split("@")[0]
+      return name.substring(0, 2).toUpperCase()
+    }
+
+    // Si es un nombre completo, tomar las iniciales
+    const names = assignee.split(" ")
+    if (names.length >= 2) {
+      return (names[0][0] + names[1][0]).toUpperCase()
+    }
+
+    return assignee.substring(0, 2).toUpperCase()
+  }
+
+  getAssigneeName(assignee: string): string {
+    if (!assignee) return "Sin asignar"
+
+    // Si es un email, extraer el nombre antes del @
+    if (assignee.includes("@")) {
+      const name = assignee.split("@")[0]
+      return name.charAt(0).toUpperCase() + name.slice(1)
+    }
+
+    return assignee
+  }
+
+  getAssigneeColor(assignee: string): string {
+    if (!assignee) return "bg-gray-400"
+
+    // Generar color basado en el hash del nombre
+    const colors = [
+      "bg-blue-500",
+      "bg-green-500",
+      "bg-purple-500",
+      "bg-pink-500",
+      "bg-indigo-500",
+      "bg-red-500",
+      "bg-yellow-500",
+      "bg-teal-500",
+    ]
+
+    let hash = 0
+    for (let i = 0; i < assignee.length; i++) {
+      hash = assignee.charCodeAt(i) + ((hash << 5) - hash)
+    }
+
+    return colors[Math.abs(hash) % colors.length]
   }
 }

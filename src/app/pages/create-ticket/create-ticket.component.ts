@@ -3,7 +3,7 @@ import { CommonModule } from "@angular/common"
 import { FormsModule } from "@angular/forms"
 import { Router } from "@angular/router"
 import { TicketService } from "../../services/ticket.service"
-import { User } from "../../models/ticket.model"
+import { User } from "../../models/user.model"
 import { Observable } from "rxjs"
 
 @Component({

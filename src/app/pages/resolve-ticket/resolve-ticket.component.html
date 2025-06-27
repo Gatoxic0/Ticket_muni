@@ -1,15 +1,257 @@
-<div *ngIf="ticket; else notFound" class="p-4">
-  <h2 class="text-xl font-bold mb-2">Resolviendo Ticket: {{ ticket.title }}</h2>
-  <p class="mb-4">{{ ticket.description }}</p>
+<div class="ticket-page">
 
-  <label class="block mb-2">Comentario de resolución:</label>
-  <textarea [(ngModel)]="resolutionComment" class="w-full p-2 border rounded mb-4"></textarea>
+  <div class="ticket-content">
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="ticket-header">
+    <div class="header-left">
+      <div class="ticket-title">
+        <div class="ticket-id">Ticket #{{ ticket.id }}</div>
+      </div>
+    </div>
+  </div>
+      <!-- Ticket Details Card -->
+      <div class="ticket-card">
+        <div class="card-header">
 
-  <button (click)="resolveTicket()" class="bg-green-600 text-white px-4 py-2 rounded">
-    Marcar como Resuelto
-  </button>
+          <h3>{{ ticket.title }}</h3>
+          <div class="ticket-meta">
+            <div class="meta-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              {{ ticket.requester }}
+            </div>
+            <div class="meta-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+              {{ ticket.department }}
+            </div>
+            <div class="meta-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 11H5a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h4l3 3V8l-3 3z"/>
+                <path d="M22 9c0 1.11-.89 2-2 2s-2-.89-2-2 .89-2 2-2 2 .89 2 2z"/>
+              </svg>
+              {{ getCategoryText(ticket.category) }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Thread Section -->
+      <div class="thread-card">
+        <div class="thread-header">
+          <div class="thread-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            Hilo del Ticket ({{ responses.length + 1 }})
+          </div>
+          <div class="thread-actions">
+            <button class="thread-action-btn">Tareas</button>
+            <button class="thread-action-btn">Hilo</button>
+          </div>
+        </div>
+
+        <div class="thread-content">
+          <!-- Original Message -->
+          <div class="message original-message">
+            <div class="message-avatar">
+              <div class="avatar-circle user-avatar">
+                {{ getInitials(ticket.requester) }}
+              </div>
+            </div>
+            <div class="message-content">
+              <div class="message-header">
+                <span class="message-author">{{ ticket.requester }}</span>
+                <span class="message-time">publicado {{ formatDate(ticket.createdAt) }}</span>
+                <button class="message-reply-btn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 20l1.3-3.9A9 9 0 1 1 7.7 19L3 20z"/>
+                  </svg>
+                </button>
+              </div>
+              <div class="message-body">
+                <p>{{ ticket.description }}</p>
+              </div>
+              <div class="message-footer">
+                <span class="message-meta">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2v20m8-8H4"/>
+                  </svg>
+                  Creado por: {{ ticket.requester }} {{ formatDate(ticket.createdAt) }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Responses -->
+          <div *ngFor="let response of responses" class="message response-message">
+            <div class="message-avatar">
+              <div class="avatar-circle support-avatar">
+                IT
+              </div>
+            </div>
+            <div class="message-content">
+              <div class="message-header">
+                <span class="message-author">{{ response.author }}</span>
+                <span class="message-time">publicado {{ formatDate(response.timestamp) }}</span>
+                <button class="message-reply-btn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 20l1.3-3.9A9 9 0 1 1 7.7 19L3 20z"/>
+                  </svg>
+                </button>
+              </div>
+              <div class="message-body">
+                <p>{{ response.message }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Response Form -->
+          <div class="response-form">
+            <div class="form-header">
+              <div class="form-tabs">
+                <button class="form-tab active">Publicar Respuesta</button>
+                <button class="form-tab">Publicar nota interna</button>
+              </div>
+            </div>
+            <div class="form-content">
+              <textarea 
+                [(ngModel)]="newResponse"
+                placeholder="Escribe tu respuesta..."
+                class="response-textarea"
+                rows="4">
+              </textarea>
+              <div class="form-footer">
+                <div class="form-left">
+                  <select class="department-select">
+                    <option>Depto Informática</option>
+                    <option>Soporte Técnico</option>
+                  </select>
+                  <select class="recipients-select">
+                    <option>Todos los Destinatarios</option>
+                    <option>Solo Solicitante</option>
+                  </select>
+                </div>
+                <button 
+                  class="send-button"
+                  (click)="addResponse()"
+                  [disabled]="!newResponse.trim()">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                  </svg>
+                  Enviar Respuesta
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <!-- Ticket Information -->
+      <div class="sidebar-card">
+        <h4 class="sidebar-title">Información del Ticket</h4>
+        <div class="info-grid">
+          <div class="info-item">
+            <label>Estado:</label>
+            <span class="status-badge small" [ngClass]="getStatusClass(ticket.status)">
+              {{ getStatusText(ticket.status) }}
+            </span>
+          </div>
+          <div class="info-item">
+            <label>Prioridad:</label>
+            <span class="priority-badge small" [ngClass]="getPriorityClass(ticket.priority)">
+              {{ getPriorityText(ticket.priority) }}
+            </span>
+          </div>
+          <div class="info-item">
+            <label>Departamento:</label>
+            <span>{{ ticket.department }}</span>
+          </div>
+          <div class="info-item">
+            <label>Creado en:</label>
+            <span>{{ formatFullDate(ticket.createdAt) }}</span>
+          </div>
+          <div class="info-item">
+            <label>Cerrado por:</label>
+            <span>{{ ticket.assignee || '-' }}</span>
+          </div>
+          <div class="info-item">
+            <label>Fecha de cierre:</label>
+            <span>-</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- User Information -->
+      <div class="sidebar-card">
+        <h4 class="sidebar-title">Usuario</h4>
+        <div class="user-info">
+          <div class="user-avatar">
+            <div class="avatar-circle user-avatar large">
+              {{ getInitials(ticket.requester) }}
+            </div>
+          </div>
+          <div class="user-details">
+            <div class="user-name">{{ getNameFromEmail(ticket.requester) }}</div>
+            <div class="user-email">{{ ticket.requester }}</div>
+          </div>
+        </div>
+        <div class="user-meta">
+          <div class="info-item">
+            <label>Email:</label>
+            <span>{{ getUserEmail(ticket.requester) }}</span>
+          </div>
+          <div class="info-item">
+            <label>Temas de ayuda:</label>
+            <span>{{ getCategoryText(ticket.category) }}</span>
+          </div>
+          <div class="info-item">
+            <label>Último mensaje:</label>
+            <span>{{ formatDate(ticket.updatedAt) }}</span>
+          </div>
+          <div class="info-item">
+            <label>Última respuesta:</label>
+            <span>{{ formatDate(ticket.updatedAt) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Management -->
+      <div class="sidebar-card">
+        <h4 class="sidebar-title">Gestión</h4>
+        <div class="management-controls">
+          <div class="control-group">
+            <label>Estado</label>
+            <select [(ngModel)]="ticket.status" class="control-select">
+              <option value="open">Abierto</option>
+              <option value="in-progress">En Progreso</option>
+              <option value="resolved">Resuelto</option>
+              <option value="closed">Cerrado</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <label>Asignado a</label>
+            <select [(ngModel)]="ticket.assignee" class="control-select">
+              <option value="">Seleccionar técnico</option>
+              <option value="Jaime Astorga">Jaime Astorga</option>
+              <option value="Francisco Droguett">Francisco Droguett</option>
+              <option value="Carlos IT">Carlos IT</option>
+              <option value="Laura IT">Laura IT</option>
+            </select>
+          </div>
+          <button class="update-button" (click)="saveChanges()">
+            Actualizar Ticket
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
-
-<ng-template #notFound>
-  <p class="text-red-500">Ticket no encontrado.</p>
-</ng-template>

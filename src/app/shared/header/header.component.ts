@@ -2,7 +2,7 @@ import { Component, type OnInit } from "@angular/core"
 import { CommonModule } from "@angular/common"
 import { RouterModule } from "@angular/router"
 import { TicketService } from "../../services/ticket.service"
-import { User } from "../../models/ticket.model"
+import { User } from "../../models/user.model"
 import { Observable } from "rxjs"
 import { take } from 'rxjs/operators'
 @Component({
