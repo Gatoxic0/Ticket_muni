@@ -1,4 +1,4 @@
-import { Component, type OnInit } from "@angular/core"
+import { Component, OnInit } from "@angular/core"
 import { CommonModule } from "@angular/common"
 import { FormsModule } from "@angular/forms"
 import { RouterModule } from "@angular/router"
@@ -7,7 +7,7 @@ import { Ticket } from "../../models/ticket.model"
 import { Observable } from "rxjs"
 import { map, switchMap } from "rxjs/operators"
 import { User } from "../../models/user.model"
-
+import { UserSessionService } from '../../services/user-session.service'
 @Component({
   selector: "app-tickets",
   standalone: true,

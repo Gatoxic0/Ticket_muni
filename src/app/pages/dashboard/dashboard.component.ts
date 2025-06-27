@@ -1,10 +1,12 @@
-import { Component } from "@angular/core"
+import { Component, OnInit } from "@angular/core"
 import { CommonModule } from "@angular/common"
-import { RouterModule } from "@angular/router"
+import { Router, RouterModule } from "@angular/router"
 import { TicketService } from "../../services/ticket.service"
 import { Ticket, TicketStats } from "../../models/ticket.model"
 import { Observable } from "rxjs"
 import { map } from "rxjs/operators"
+import { User } from "../../models/user.model"
+import { UserSessionService } from "../../services/user-session.service"
 
 @Component({
   selector: "app-dashboard",
@@ -13,13 +15,27 @@ import { map } from "rxjs/operators"
   templateUrl: "./dashboard.component.html",
   styleUrls: ["./dashboard.component.css"],
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnInit {
+  usuario: User | null = null
   tickets$: Observable<Ticket[]>
   stats$: Observable<TicketStats>
 
-  constructor(private ticketService: TicketService) {
+  constructor(
+    private userSession: UserSessionService,
+    private router: Router,
+    private ticketService: TicketService
+  ) {
     this.tickets$ = this.ticketService.getTickets()
     this.stats$ = this.calculateStats()
+  }
+
+  ngOnInit(): void {
+    this.usuario = this.userSession.getUsuarioActivo()
+
+    if (!this.usuario || this.usuario.role !== "admin") {
+      // 🔐 Redirigir si no es admin
+      this.router.navigate(["/tickets"])
+    }
   }
 
   private calculateStats(): Observable<TicketStats> {
@@ -32,7 +48,7 @@ export class DashboardComponent {
         closed: tickets.filter((t) => t.status === "closed").length,
         urgent: tickets.filter((t) => t.priority === "urgent").length,
         high: tickets.filter((t) => t.priority === "high").length,
-      })),
+      }))
     )
   }
 

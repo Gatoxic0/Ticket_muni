@@ -1,0 +1,14 @@
+<h2>Registro de Usuario</h2>
+<form (ngSubmit)="registrar()">
+  <input [(ngModel)]="user.name" name="name" placeholder="Nombre" required />
+  <input [(ngModel)]="user.email" name="email" placeholder="Correo" required type="email" />
+  <input [(ngModel)]="user.department" name="department" placeholder="Departamento" required />
+
+  <select [(ngModel)]="user.role" name="role" required>
+    <option value="user">Usuario</option>
+    <option value="admin">Administrador</option>
+  </select>
+
+  <button type="submit">Registrarse</button>
+</form>
+<p *ngIf="mensaje">{{ mensaje }}</p>

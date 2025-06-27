@@ -9,7 +9,7 @@
 
     <form (ngSubmit)="onSubmit()" #ticketForm="ngForm" class="space-y-6">
       <!-- User Info -->
-      <div *ngIf="currentUser$ | async as user" class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+        <div *ngIf="usuario as user" class="bg-gray-50 rounded-lg p-4 border border-gray-200">
         <h3 class="text-sm font-medium text-gray-900 mb-3">Información del Solicitante</h3>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
           <div>

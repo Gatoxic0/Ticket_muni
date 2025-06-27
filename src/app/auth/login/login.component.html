@@ -1,0 +1,6 @@
+<h2>Iniciar Sesión</h2>
+<form (ngSubmit)="iniciarSesion()">
+  <input [(ngModel)]="email" name="email" placeholder="Correo" required type="email" />
+  <button type="submit">Entrar</button>
+</form>
+<p *ngIf="mensaje">{{ mensaje }}</p>

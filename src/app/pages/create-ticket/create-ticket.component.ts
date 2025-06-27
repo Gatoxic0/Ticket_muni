@@ -1,10 +1,11 @@
-import { Component } from "@angular/core"
+import { Component, OnInit } from "@angular/core"
 import { CommonModule } from "@angular/common"
 import { FormsModule } from "@angular/forms"
 import { Router } from "@angular/router"
 import { TicketService } from "../../services/ticket.service"
 import { User } from "../../models/user.model"
-import { Observable } from "rxjs"
+import { UserSessionService } from "../../services/user-session.service"
+import { Ticket } from "../../models/ticket.model"
 
 @Component({
   selector: "app-create-ticket",
@@ -13,8 +14,8 @@ import { Observable } from "rxjs"
   templateUrl: "./create-ticket.component.html",
   styleUrls: ["./create-ticket.component.css"],
 })
-export class CreateTicketComponent {
-  currentUser$: Observable<User>
+export class CreateTicketComponent implements OnInit {
+  usuario: User | null = null
 
   formData = {
     title: "",
@@ -56,25 +57,36 @@ export class CreateTicketComponent {
 
   constructor(
     private ticketService: TicketService,
-    private router: Router,
-  ) {
-    this.currentUser$ = this.ticketService.getCurrentUser()
+    private userSession: UserSessionService,
+    private router: Router
+  ) {}
+
+  ngOnInit(): void {
+    this.usuario = this.userSession.getUsuarioActivo()
   }
 
   onSubmit(): void {
-    if (!this.formData.title || !this.formData.description || !this.formData.category) {
+    if (!this.formData.title || !this.formData.description || !this.formData.category || !this.usuario) {
       return
     }
 
-    this.ticketService.addTicket({
-      title: this.formData.title,
-      description: this.formData.description,
-      category: this.formData.category as any,
-      priority: this.formData.priority,
-      status: "open",
-    })
+const nuevoTicket: Ticket = {
+  id: "", // asumimos que el servicio lo genera
+  title: this.formData.title,
+  description: this.formData.description,
+  category: this.formData.category as any,
+  priority: this.formData.priority,
+  status: "open",
+  requester: this.usuario.email,
+  department: this.usuario.department,
+  createdAt: new Date(),
+  assignee: "IT",      // o null o algún valor por defecto
+  updatedAt: new Date(),
+}
 
-    // Reset form
+
+    this.ticketService.addTicket(nuevoTicket)
+
     this.formData = {
       title: "",
       description: "",
@@ -82,7 +94,6 @@ export class CreateTicketComponent {
       priority: "medium",
     }
 
-    // Navigate to tickets
     this.router.navigate(["/tickets"])
   }
 
