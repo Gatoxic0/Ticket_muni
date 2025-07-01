@@ -272,23 +272,31 @@
   justify-content: center;
   font-size: 14px;
   font-weight: 600;
+  color: white; /* texto siempre blanco */
 }
 
+/* Para avatar grande en sidebar */
 .avatar-circle.large {
   width: 48px;
   height: 48px;
   font-size: 16px;
 }
 
-.user-avatar {
-  background-color: #dbeafe;
-  color: #1d4ed8;
+/* Admin: rojo fuerte */
+.admin-avatar {
+  background-color: #ef4444; /* rojo */
 }
 
-.support-avatar {
-  background-color: #fed7aa;
-  color: #ea580c;
+/* Usuario normal: azul */
+.user-avatar {
+  background-color: #3b82f6; /* azul */
 }
+
+/* Desconocido: gris */
+.unknown-avatar {
+  background-color: #6b7280; /* gris */
+}
+
 
 .message-content {
   flex: 1;

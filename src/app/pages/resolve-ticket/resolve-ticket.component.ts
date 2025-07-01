@@ -23,6 +23,8 @@ export class ResolveTicketComponent implements OnDestroy {
   newResponse = "";
   currentUser: User | null = null;
   adminUsers: User[] = [];
+  allUsers: User[] = [];
+
 
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -48,11 +50,13 @@ ngOnInit() {
       this.currentUser = user;
     });
 
-  this.userSessionService.usuarios$
-    .pipe(takeUntil(this.destroy$))
-    .subscribe((usuarios: User[]) => {
-      this.adminUsers = usuarios.filter((u) => u.role === "admin");
-    });
+ this.userSessionService.usuarios$
+  .pipe(takeUntil(this.destroy$))
+  .subscribe((usuarios: User[]) => {
+    this.allUsers = usuarios;
+    this.adminUsers = usuarios.filter((u) => u.role === "admin");
+  });
+
 
   // 🔽 Intentar cargar respuestas guardadas en localStorage
   const storedResponses = localStorage.getItem(`ticket-responses-${this.ticket.id}`);
@@ -65,7 +69,7 @@ ngOnInit() {
     // Si no hay respuestas guardadas, usar la respuesta inicial por defecto
     this.responses = [
       {
-        author: "Administrador",
+        author: "Soporte Tecnico",
         authorEmail: "soporte@empresa.cl",
         message:
           "Hemos recibido tu solicitud. Estamos revisando el problema y te contactaremos pronto con una solución.",
@@ -146,6 +150,13 @@ addResponse() {
       minute: "2-digit",
     }).format(new Date(date));
   }
+
+getUserRole(email: string): 'admin' | 'user' | 'unknown' {
+  if (!email) return 'unknown';
+  const user = this.allUsers.find((u) => u.email === email);
+  return user?.role ?? 'unknown';
+}
+
 
   getInitials(name?: string): string {
     if (!name) return "?";

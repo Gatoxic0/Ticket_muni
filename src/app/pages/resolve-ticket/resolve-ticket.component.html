@@ -59,11 +59,18 @@
         <div class="thread-content">
           <!-- Original Message -->
           <div class="message original-message">
-            <div class="message-avatar">
-              <div class="avatar-circle user-avatar">
-                {{ getInitials(ticket.requesterName) }}
-              </div>
-            </div>
+        <div class="message-avatar">
+          <div 
+            class="avatar-circle" 
+            [ngClass]="{
+              'admin-avatar': getUserRole(ticket.requesterEmail) === 'admin',
+              'user-avatar': getUserRole(ticket.requesterEmail) === 'user',
+              'unknown-avatar': getUserRole(ticket.requesterEmail) === 'unknown'
+            }"
+          >
+            {{ getInitials(ticket.requesterName) }}
+          </div>
+        </div>
             <div class="message-content">
               <div class="message-header">
                 <div class="flex flex-col">
@@ -94,9 +101,17 @@
           <!-- Responses -->
           <div *ngFor="let response of responses" class="message response-message">
             <div class="message-avatar">
-              <div class="avatar-circle support-avatar">
-                IT
-              </div>
+            <div 
+              class="avatar-circle" 
+              [ngClass]="{
+                'admin-avatar': getUserRole(response.authorEmail) === 'admin',
+                'user-avatar': getUserRole(response.authorEmail) === 'user',
+                'unknown-avatar': getUserRole(response.authorEmail) === 'unknown'
+              }"
+            >
+              {{ getInitials(response.author) }}
+            </div>
+
             </div>
             <div class="message-content">
               <div class="message-header">
@@ -113,6 +128,7 @@
               </div>
             </div>
           </div>
+
 
 
           <!-- Response Form -->
@@ -200,10 +216,15 @@
       <div class="sidebar-card">
         <h4 class="sidebar-title">Usuario</h4>
         <div class="user-info">
-          <div class="user-avatar">
-            <div class="avatar-circle user-avatar large">
-              {{ getInitials(ticket.requesterName) }}
-            </div>
+          <div 
+            class="avatar-circle large" 
+            [ngClass]="{
+              'admin-avatar': getUserRole(ticket.requesterEmail) === 'admin',
+              'user-avatar': getUserRole(ticket.requesterEmail) === 'user',
+              'unknown-avatar': getUserRole(ticket.requesterEmail) === 'unknown'
+            }"
+          >
+            {{ getInitials(ticket.requesterName) }}
           </div>
           <div class="user-details">
             <div class="user-name">{{ ticket.requesterName }}</div>
