@@ -1,9 +1,12 @@
-import { Component, inject } from "@angular/core";
+import { Component, inject, OnDestroy } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, Router } from "@angular/router";
 import { Location } from "@angular/common";
+import { Subject } from "rxjs";
+import { takeUntil } from "rxjs/operators";
 import { TicketService } from "src/app/services/ticket.service";
+import { UserSessionService } from "src/app/services/user-session.service";
 import { Ticket } from "src/app/models/ticket.model";
 import { User } from "src/app/models/user.model";
 
@@ -14,58 +17,98 @@ import { User } from "src/app/models/user.model";
   templateUrl: "./resolve-ticket.component.html",
   styleUrls: ["./resolve-ticket.component.css"],
 })
-export class ResolveTicketComponent {
+export class ResolveTicketComponent implements OnDestroy {
   ticket!: Ticket;
-  responses: { author: string; message: string; timestamp: Date }[] = [];
+  responses: { author: string; authorEmail: string; message: string; timestamp: Date }[] = [];
   newResponse = "";
-
-users: User[] = [
-  { name: "María González", email: "mgonzalez@empresa.cl", role: "user", department: "Contabilidad" },
-  { name: "Pedro Martín", email: "pmartin@empresa.cl", role: "user", department: "Ventas" },
-  // agrega todos los usuarios que usas en la app
-];
-
+  currentUser: User | null = null;
+  adminUsers: User[] = [];
 
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private location = inject(Location);
   private ticketService = inject(TicketService);
+  private userSessionService = inject(UserSessionService);
 
-  ngOnInit() {
-    const id = this.route.snapshot.paramMap.get("id");
-    const allTickets = this.ticketService.getAllTickets();
-    this.ticket = allTickets.find((t) => t.id === id)!;
+  private destroy$ = new Subject<void>();
 
-    if (!this.ticket) {
-      this.router.navigate(["/tickets"]);
-      return;
-    }
+ngOnInit() {
+  const id = this.route.snapshot.paramMap.get("id");
+  const allTickets = this.ticketService.getAllTickets();
+  this.ticket = allTickets.find((t) => t.id === id)!;
 
-    // Simular respuestas existentes
+  if (!this.ticket) {
+    this.router.navigate(["/tickets"]);
+    return;
+  }
+
+  this.userSessionService.usuarioActivo$
+    .pipe(takeUntil(this.destroy$))
+    .subscribe((user) => {
+      this.currentUser = user;
+    });
+
+  this.userSessionService.usuarios$
+    .pipe(takeUntil(this.destroy$))
+    .subscribe((usuarios: User[]) => {
+      this.adminUsers = usuarios.filter((u) => u.role === "admin");
+    });
+
+  // 🔽 Intentar cargar respuestas guardadas en localStorage
+  const storedResponses = localStorage.getItem(`ticket-responses-${this.ticket.id}`);
+  if (storedResponses) {
+    this.responses = JSON.parse(storedResponses).map((r: any) => ({
+      ...r,
+      timestamp: new Date(r.timestamp), // Restaurar tipo Date
+    }));
+  } else {
+    // Si no hay respuestas guardadas, usar la respuesta inicial por defecto
     this.responses = [
       {
-        author: "soporte@empresa.cl",
+        author: "Administrador",
+        authorEmail: "soporte@empresa.cl",
         message:
           "Hemos recibido tu solicitud. Estamos revisando el problema y te contactaremos pronto con una solución.",
-        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 horas atrás
+        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
       },
     ];
+
+    // 🔽 Guardar en localStorage inmediatamente para persistencia futura
+    localStorage.setItem(
+      `ticket-responses-${this.ticket.id}`,
+      JSON.stringify(this.responses)
+    );
+  }
+}
+
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   goBack(): void {
     this.location.back();
   }
 
-  addResponse() {
-    if (!this.newResponse.trim()) return;
+addResponse() {
+  if (!this.newResponse.trim() || !this.currentUser) return;
 
-    this.responses.push({
-      author: "soporte@empresa.cl",
-      message: this.newResponse,
-      timestamp: new Date(),
-    });
-    this.newResponse = "";
-  }
+  const newMsg = {
+    author: this.currentUser.name,
+    authorEmail: this.currentUser.email,
+    message: this.newResponse,
+    timestamp: new Date(),
+  };
+
+  this.responses.push(newMsg);
+
+  // Guardar en Local Storage
+  localStorage.setItem(`ticket-responses-${this.ticket.id}`, JSON.stringify(this.responses));
+
+  this.newResponse = "";
+}
+
 
   saveChanges() {
     this.ticket.updatedAt = new Date();
@@ -104,43 +147,17 @@ users: User[] = [
     }).format(new Date(date));
   }
 
-getInitials(name?: string): string {
-  if (!name) return '?'; // O puedes retornar ''
-  const parts = name.trim().split(' ');
-  return parts.map(p => p[0]).join('').toUpperCase();
-}
-
-
-getUserEmail(name: string): string {
-  const cleanName = name.toLowerCase().replace(/\s+/g, ".");
-  return `${cleanName}`;
-}
-
-getNameFromEmail(email: string): string {
-  if (!email) return "";
-
-  const user = this.users.find(u => u.email.toLowerCase() === email.toLowerCase());
-  if (user) {
-    return user.name; // Retorna el nombre completo correcto
+  getInitials(name?: string): string {
+    if (!name) return "?";
+    const parts = name.trim().split(" ");
+    return parts.map((p) => p[0]).join("").toUpperCase();
   }
-
-  // Si no lo encuentra, intenta obtener un nombre básico del email
-  const namePart = email.split("@")[0];
-  const nameWords = namePart.split(".");
-  return nameWords
-    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
-}
-
-
-
 
   getStatusText(status: string): string {
     const statusMap: { [key: string]: string } = {
       open: "Abierto",
       "in-progress": "En Progreso",
       resolved: "Resuelto",
-      closed: "Cerrado",
     };
     return statusMap[status] || status;
   }
@@ -170,7 +187,6 @@ getNameFromEmail(email: string): string {
       open: "status-open",
       "in-progress": "status-in-progress",
       resolved: "status-resolved",
-      closed: "status-closed",
     };
     return classMap[status] || "status-open";
   }

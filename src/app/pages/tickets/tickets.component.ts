@@ -49,10 +49,11 @@ export class TicketsComponent implements OnInit {
   ngOnInit(): void {}
 
   // Observable con tickets filtrados por búsqueda y estado (reactivo)
-  getFilteredTickets(): Observable<Ticket[]> {
-    return this.tickets$.pipe(
-      map(tickets =>
-        tickets.filter(ticket => {
+getFilteredTickets(): Observable<Ticket[]> {
+  return this.tickets$.pipe(
+    map(tickets =>
+      tickets
+        .filter(ticket => {
           const query = this.searchQuery.toLowerCase();
           const matchesSearch =
             ticket.title.toLowerCase().includes(query) ||
@@ -65,9 +66,12 @@ export class TicketsComponent implements OnInit {
 
           return matchesSearch && matchesStatus;
         })
-      )
-    );
-  }
+        // Ordenar por fecha DESC (más reciente primero)
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    )
+  );
+}
+
 
   getStatusCount(status: string): Observable<number> {
     return this.getFilteredTickets().pipe(

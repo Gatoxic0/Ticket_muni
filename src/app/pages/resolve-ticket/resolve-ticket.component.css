@@ -247,6 +247,17 @@
   gap: 16px;
   margin-bottom: 24px;
 }
+.message-email {
+  opacity: 0.6;
+  font-size: 0.85em;
+  display: block;
+  margin-top: 2px;
+  margin-bottom: 4px;
+}
+.author-info {
+  display: flex;
+  flex-direction: column;
+}
 
 .message-avatar {
   flex-shrink: 0;

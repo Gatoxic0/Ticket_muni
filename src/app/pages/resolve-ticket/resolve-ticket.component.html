@@ -66,7 +66,10 @@
             </div>
             <div class="message-content">
               <div class="message-header">
-                <span class="message-author">{{ ticket.requesterName }}</span>
+                <div class="flex flex-col">
+                <span class="message-author font-semibold text-base">{{ ticket.requesterName }}</span>
+                <span class="text-sm text-gray-500">{{ ticket.requesterEmail }}</span>
+                </div>
                 <span class="message-time">publicado {{ formatDate(ticket.createdAt) }}</span>
                 <button class="message-reply-btn">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -97,19 +100,20 @@
             </div>
             <div class="message-content">
               <div class="message-header">
-                <span class="message-author">{{ response.author }}</span>
+                <div class="author-info">
+                  <span class="message-author">{{ response.author }}</span>
+                  <span class="message-email">{{ response.authorEmail }}</span>
+                </div>
                 <span class="message-time">publicado {{ formatDate(response.timestamp) }}</span>
-                <button class="message-reply-btn">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M3 20l1.3-3.9A9 9 0 1 1 7.7 19L3 20z"/>
-                  </svg>
-                </button>
+                <button class="message-reply-btn">...</button>
               </div>
+
               <div class="message-body">
                 <p>{{ response.message }}</p>
               </div>
             </div>
           </div>
+
 
           <!-- Response Form -->
           <div class="response-form">
@@ -181,7 +185,9 @@
           </div>
           <div class="info-item">
             <label>Cerrado por:</label>
-            <span>{{ ticket.assignee || '-' }}</span>
+            <span>
+              {{ ticket.status === 'resolved' ? (ticket.assignee || 'Desconocido') : 'Aún abierto' }}
+            </span>
           </div>
           <div class="info-item">
             <label>Fecha de cierre:</label>
@@ -235,17 +241,15 @@
               <option value="open">Abierto</option>
               <option value="in-progress">En Progreso</option>
               <option value="resolved">Resuelto</option>
-              <option value="closed">Cerrado</option>
             </select>
           </div>
           <div class="control-group">
             <label>Asignado a</label>
             <select [(ngModel)]="ticket.assignee" class="control-select">
               <option value="">Seleccionar técnico</option>
-              <option value="Jaime Astorga">Jaime Astorga</option>
-              <option value="Francisco Droguett">Francisco Droguett</option>
-              <option value="Carlos IT">Carlos IT</option>
-              <option value="Laura IT">Laura IT</option>
+              <option *ngFor="let admin of adminUsers" [value]="admin.name">
+                {{ admin.name }}
+              </option>
             </select>
           </div>
           <button class="update-button" (click)="saveChanges()">

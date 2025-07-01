@@ -2,16 +2,23 @@ export interface Ticket {
   id: string;
   title: string;
   description: string;
+  requesterName: string;
+  requesterEmail: string;
+  department: string;
   category: string;
   priority: string;
   status: string;
-  requesterName: string;  
-  requesterEmail: string;  
   assignee?: string;
-  department?: string;
   createdAt: Date;
   updatedAt: Date;
+  responses?: {
+    author: string;
+    authorEmail: string;
+    message: string;
+    timestamp: Date;
+  }[];
 }
+
 
 
 export interface TicketStats {

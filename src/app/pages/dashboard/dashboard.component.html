@@ -47,20 +47,21 @@
         </div>
       </div>
 
-      <div class="bg-white rounded-lg border border-gray-200 p-6 border-l-4 border-l-red-500">
+      <div class="bg-white rounded-lg border border-gray-200 p-6 border-l-4 border-l-green-500">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm font-medium text-gray-600">Alta Prioridad</p>
-            <p class="text-3xl font-bold text-gray-900">{{ stats.urgent + stats.high }}</p>
-            <p class="text-xs text-gray-500 mt-1">Urgentes y altas</p>
+            <p class="text-sm font-medium text-gray-600">Tickets Resueltos</p>
+            <p class="text-3xl font-bold text-gray-900">{{ stats.resolved }}</p>
+            <p class="text-xs text-gray-500 mt-1">Ya solucionados</p>
           </div>
-          <div class="h-12 w-12 bg-red-100 rounded-lg flex items-center justify-center">
-            <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+          <div class="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
+            <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M5 13l4 4L19 7" />
             </svg>
           </div>
         </div>
-      </div>
+</div>
     </div>
 
     <!-- Recent Tickets -->
