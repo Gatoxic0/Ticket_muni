@@ -1,24 +1,35 @@
-// user-session.service.ts
 import { Injectable } from '@angular/core';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { User } from '../models/user.model';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class UserSessionService {
-  private readonly STORAGE_KEY = 'usuario_activo';
+  private usuarioSubject = new BehaviorSubject<User | null>(this.loadUserFromStorage());
 
-  getUsuarioActivo(): User | null {
-    const data = localStorage.getItem(this.STORAGE_KEY);
+  constructor() {}
+
+  private loadUserFromStorage(): User | null {
+    const data = localStorage.getItem('usuarioActivo');
     return data ? JSON.parse(data) : null;
   }
 
-    setUsuarioActivo(usuario: User): void {
-    localStorage.setItem('usuario_activo', JSON.stringify(usuario));
-    }
+  get usuarioActivo$(): Observable<User | null> {
+    return this.usuarioSubject.asObservable();
+  }
 
+  // ✅ Este método sirve para obtener el valor actual (sincrónico)
+  getUsuarioActivo(): User | null {
+    return this.usuarioSubject.getValue();
+  }
+
+  // ✅ Renombrado a "setUsuarioActivo" para coincidir con lo que usas en otros archivos
+  setUsuarioActivo(user: User): void {
+    localStorage.setItem('usuarioActivo', JSON.stringify(user));
+    this.usuarioSubject.next(user);
+  }
 
   logout(): void {
-    localStorage.removeItem(this.STORAGE_KEY);
+    localStorage.removeItem('usuarioActivo');
+    this.usuarioSubject.next(null);
   }
 }

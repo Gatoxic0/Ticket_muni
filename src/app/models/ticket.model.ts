@@ -5,13 +5,14 @@ export interface Ticket {
   category: string;
   priority: string;
   status: string;
-  requester: string;
-  assignee: string;
+  requesterName: string;  
+  requesterEmail: string;  
+  assignee?: string;
+  department?: string;
   createdAt: Date;
   updatedAt: Date;
-  department: string;
-  resolutionComment?: string;
 }
+
 
 export interface TicketStats {
   total: number;

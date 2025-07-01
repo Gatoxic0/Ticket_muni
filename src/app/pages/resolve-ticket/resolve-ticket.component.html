@@ -21,7 +21,7 @@
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                 <circle cx="12" cy="7" r="4"/>
               </svg>
-              {{ ticket.requester }}
+              {{ ticket.requesterName }}
             </div>
             <div class="meta-item">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -61,12 +61,12 @@
           <div class="message original-message">
             <div class="message-avatar">
               <div class="avatar-circle user-avatar">
-                {{ getInitials(ticket.requester) }}
+                {{ getInitials(ticket.requesterName) }}
               </div>
             </div>
             <div class="message-content">
               <div class="message-header">
-                <span class="message-author">{{ ticket.requester }}</span>
+                <span class="message-author">{{ ticket.requesterName }}</span>
                 <span class="message-time">publicado {{ formatDate(ticket.createdAt) }}</span>
                 <button class="message-reply-btn">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -82,7 +82,7 @@
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M12 2v20m8-8H4"/>
                   </svg>
-                  Creado por: {{ ticket.requester }} {{ formatDate(ticket.createdAt) }}
+                  Creado por: {{ ticket.requesterName }} {{ formatDate(ticket.createdAt) }}
                 </span>
               </div>
             </div>
@@ -196,18 +196,19 @@
         <div class="user-info">
           <div class="user-avatar">
             <div class="avatar-circle user-avatar large">
-              {{ getInitials(ticket.requester) }}
+              {{ getInitials(ticket.requesterName) }}
             </div>
           </div>
           <div class="user-details">
-            <div class="user-name">{{ getNameFromEmail(ticket.requester) }}</div>
-            <div class="user-email">{{ ticket.requester }}</div>
+            <div class="user-name">{{ ticket.requesterName }}</div>
+            <div class="user-email">{{ ticket.requesterEmail }}</div>
           </div>
         </div>
         <div class="user-meta">
           <div class="info-item">
             <label>Email:</label>
-            <span>{{ getUserEmail(ticket.requester) }}</span>
+            <span>{{ ticket.requesterEmail }}
+</span>
           </div>
           <div class="info-item">
             <label>Temas de ayuda:</label>

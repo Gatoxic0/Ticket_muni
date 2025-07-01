@@ -104,14 +104,12 @@ users: User[] = [
     }).format(new Date(date));
   }
 
-  getInitials(name: string): string {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase();
-  }
+getInitials(name?: string): string {
+  if (!name) return '?'; // O puedes retornar ''
+  const parts = name.trim().split(' ');
+  return parts.map(p => p[0]).join('').toUpperCase();
+}
+
 
 getUserEmail(name: string): string {
   const cleanName = name.toLowerCase().replace(/\s+/g, ".");

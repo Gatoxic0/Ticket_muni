@@ -1,11 +1,12 @@
-import { Component, OnInit } from "@angular/core"
-import { CommonModule } from "@angular/common"
-import { FormsModule } from "@angular/forms"
-import { Router } from "@angular/router"
-import { TicketService } from "../../services/ticket.service"
-import { User } from "../../models/user.model"
-import { UserSessionService } from "../../services/user-session.service"
-import { Ticket } from "../../models/ticket.model"
+import { Component, OnInit, OnDestroy } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { FormsModule } from "@angular/forms";
+import { Router } from "@angular/router";
+import { Subscription } from "rxjs";
+import { TicketService } from "../../services/ticket.service";
+import { User } from "../../models/user.model";
+import { UserSessionService } from "../../services/user-session.service";
+import { Ticket } from "../../models/ticket.model";
 
 @Component({
   selector: "app-create-ticket",
@@ -14,15 +15,16 @@ import { Ticket } from "../../models/ticket.model"
   templateUrl: "./create-ticket.component.html",
   styleUrls: ["./create-ticket.component.css"],
 })
-export class CreateTicketComponent implements OnInit {
-  usuario: User | null = null
+export class CreateTicketComponent implements OnInit, OnDestroy {
+  usuario: User | null = null;
+  usuarioSub?: Subscription;
 
   formData = {
     title: "",
     description: "",
     category: "",
     priority: "medium" as const,
-  }
+  };
 
   categories = [
     {
@@ -53,7 +55,7 @@ export class CreateTicketComponent implements OnInit {
       iconPath:
         "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z",
     },
-  ]
+  ];
 
   constructor(
     private ticketService: TicketService,
@@ -62,42 +64,36 @@ export class CreateTicketComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.usuario = this.userSession.getUsuarioActivo()
+    this.usuarioSub = this.userSession.usuarioActivo$.subscribe((user) => {
+      this.usuario = user;
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.usuarioSub?.unsubscribe();
   }
 
   onSubmit(): void {
-    if (!this.formData.title || !this.formData.description || !this.formData.category || !this.usuario) {
-      return
+    if (
+      !this.formData.title ||
+      !this.formData.description ||
+      !this.formData.category ||
+      !this.usuario
+    ) {
+      return;
     }
 
-const nuevoTicket: Ticket = {
-  id: "", // asumimos que el servicio lo genera
+this.ticketService.addTicket({
   title: this.formData.title,
   description: this.formData.description,
-  category: this.formData.category as any,
+  category: this.formData.category,
   priority: this.formData.priority,
-  status: "open",
-  requester: this.usuario.email,
-  department: this.usuario.department,
-  createdAt: new Date(),
-  assignee: "IT",      // o null o algún valor por defecto
-  updatedAt: new Date(),
-}
+});
 
-
-    this.ticketService.addTicket(nuevoTicket)
-
-    this.formData = {
-      title: "",
-      description: "",
-      category: "",
-      priority: "medium",
-    }
-
-    this.router.navigate(["/tickets"])
+    this.router.navigate(["/tickets"]);
   }
 
   selectCategory(category: string): void {
-    this.formData.category = category
+    this.formData.category = category;
   }
 }

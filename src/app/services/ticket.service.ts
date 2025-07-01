@@ -7,13 +7,6 @@ import { User } from '../models/user.model';
 @Injectable({ providedIn: 'root' })
 export class TicketService {
   private ticketsSubject = new BehaviorSubject<Ticket[]>([]);
-  private currentUserSubject = new BehaviorSubject<User>({
-    name: 'Maria Gonzales',
-    email: 'usuario@empresa.cl',
-    department: 'Soporte',
-    role: 'user' // 👈 Esto soluciona el error
-  });
-
 
   constructor() {
     const loaded = this.loadTicketsFromStorage();
@@ -29,52 +22,43 @@ export class TicketService {
     localStorage.setItem('tickets', JSON.stringify(tickets));
   }
 
-  getAllTickets(): Ticket[] {
-    return this.ticketsSubject.value;
-  }
-
   getTickets(): Observable<Ticket[]> {
     return this.ticketsSubject.asObservable();
   }
 
-  getTicketsByUser(email: string): Observable<Ticket[]> {
-    return this.ticketsSubject.asObservable().pipe(
-      map((tickets) => tickets.filter(t => t.requester === email))
-    );
+  getAllTickets(): Ticket[] {
+    return this.ticketsSubject.value;
   }
 
-  getCurrentUser(): Observable<User> {
-    return this.currentUserSubject.asObservable();
-  }
-  getCurrentUserValue(): User {
-    return this.currentUserSubject.value;
+  getTicketsByUser(email: string): Observable<Ticket[]> {
+  return this.ticketsSubject.asObservable().pipe(
+    map((tickets) => tickets.filter(t => t.requesterEmail === email)) // ✅ nuevo campo
+  );
 }
 
 
-  setCurrentUser(user: User): void {
-    this.currentUserSubject.next(user);
-  }
+addTicket(ticketData: Partial<Ticket>): void {
+  const currentUser = JSON.parse(localStorage.getItem('usuarioActivo') || '{}') as User;
 
-  addTicket(ticketData: Partial<Ticket>): void {
-    const currentUser = this.currentUserSubject.value;
-    const newTicket: Ticket = {
-      id: `TK-${String(Date.now()).slice(-3)}`,
-      title: ticketData.title || '',
-      description: ticketData.description || '',
-      category: ticketData.category || 'hardware',
-      priority: ticketData.priority || 'media',
-      status: 'open',
-      requester: currentUser.email,
-      assignee: 'soporte@empresa.cl',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      department: currentUser.department,
-    };
-    const updatedTickets = [...this.ticketsSubject.value, newTicket];
-    this.ticketsSubject.next(updatedTickets);
-    this.saveTicketsToStorage(updatedTickets);
-  }
+  const newTicket: Ticket = {
+    id: `TK-${String(Date.now()).slice(-3)}`,
+    title: ticketData.title || '',
+    description: ticketData.description || '',
+    category: ticketData.category || 'hardware',
+    priority: ticketData.priority || 'media',
+    status: 'open',
+    requesterName: currentUser.name,  
+    requesterEmail: currentUser.email,  
+    assignee: 'soporte@empresa.cl',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    department: currentUser.department,
+  };
 
+  const updatedTickets = [...this.ticketsSubject.value, newTicket];
+  this.ticketsSubject.next(updatedTickets);
+  this.saveTicketsToStorage(updatedTickets);
+}
   updateTicket(updated: Ticket): void {
     const updatedTickets = this.ticketsSubject.value.map((t) =>
       t.id === updated.id ? updated : t

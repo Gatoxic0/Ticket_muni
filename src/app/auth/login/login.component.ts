@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../auth.service';
+import { UserSessionService } from 'src/app/services/user-session.service';
 
 @Component({
   selector: 'app-login',
@@ -14,17 +15,18 @@ export class LoginComponent {
   email = '';
   mensaje = '';
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(
+    private authService: AuthService,
+    private session: UserSessionService,
+    private router: Router) {}
 
-  iniciarSesion() {
+  login() {
     const usuario = this.authService.login(this.email);
     if (usuario) {
-      this.mensaje = 'Sesión iniciada 🎉';
-      sessionStorage.setItem('usuarioActivo', JSON.stringify(usuario))
-      ;
-      this.router.navigate(['/tickets']);
+      this.session.setUsuarioActivo(usuario);
+      this.router.navigate(['/tickets']); // redirigir tras login
     } else {
-      this.mensaje = 'Correo no registrado ❌';
+      alert('Usuario no encontrado');
     }
   }
 }
