@@ -52,9 +52,16 @@ export class DashboardComponent implements OnInit {
     )
   }
 
-  getRecentTickets(): Observable<Ticket[]> {
-    return this.tickets$.pipe(map((tickets) => tickets.slice(0, 10)))
-  }
+getRecentTickets(): Observable<Ticket[]> {
+  return this.tickets$.pipe(
+    map((tickets) =>
+      [...tickets] // Clonamos el arreglo para evitar mutarlo
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .slice(0, 10)
+    )
+  );
+}
+
 
   formatDate(date: Date): string {
     return new Intl.DateTimeFormat("es-ES", {
