@@ -2,7 +2,9 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { User } from '../models/user.model';
 
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root',
+})
 export class UserSessionService {
   private usuarioSubject = new BehaviorSubject<User | null>(this.loadUserFromStorage());
   private usuariosSubject = new BehaviorSubject<User[]>(this.loadUsuariosFromStorage());
@@ -26,7 +28,23 @@ export class UserSessionService {
     return this.usuarioSubject.asObservable();
   }
 
-  // Obtener usuario activo de forma directa
+  // Observable de todos los usuarios
+  get usuarios$(): Observable<User[]> {
+    return this.usuariosSubject.asObservable();
+  }
+
+  // Obtener la lista de usuarios directamente (sin ser observable)
+  getUsuarios(): User[] {
+    return this.usuariosSubject.getValue();
+  }
+
+  // Guardar la lista de usuarios en localStorage
+  setUsuarios(usuarios: User[]): void {
+    localStorage.setItem('usuarios', JSON.stringify(usuarios));
+    this.usuariosSubject.next(usuarios);
+  }
+
+  // Obtener usuario activo directamente (sin ser observable)
   getUsuarioActivo(): User | null {
     return this.usuarioSubject.getValue();
   }
@@ -35,11 +53,6 @@ export class UserSessionService {
   setUsuarioActivo(user: User): void {
     localStorage.setItem('usuarioActivo', JSON.stringify(user));
     this.usuarioSubject.next(user);
-  }
-
-  // Observable de todos los usuarios
-  get usuarios$(): Observable<User[]> {
-    return this.usuariosSubject.asObservable();
   }
 
   // Cerrar sesión
