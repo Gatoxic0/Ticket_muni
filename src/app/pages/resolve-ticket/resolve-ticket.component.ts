@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy } from "@angular/core";
+import { Component, OnInit, AfterViewInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, Router } from "@angular/router";
@@ -9,15 +9,23 @@ import { TicketService } from "src/app/services/ticket.service";
 import { UserSessionService } from "src/app/services/user-session.service";
 import { Ticket } from "src/app/models/ticket.model";
 import { User } from "src/app/models/user.model";
+import { EditorModule } from "@tinymce/tinymce-angular";
+
+interface QuickResponse {
+  title: string;
+  text: string;
+}
 
 @Component({
   selector: "app-resolve-ticket",
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, EditorModule],
   templateUrl: "./resolve-ticket.component.html",
   styleUrls: ["./resolve-ticket.component.css"],
 })
-export class ResolveTicketComponent implements OnDestroy {
+export class ResolveTicketComponent implements OnInit, AfterViewInit, OnDestroy {
+  selectedImageUrl: string | null = null;
+  isImageModalOpen = false;
   ticket!: Ticket;
   responses: { author: string; authorEmail: string; message: string; timestamp: Date }[] = [];
   newResponse = "";
@@ -25,70 +33,175 @@ export class ResolveTicketComponent implements OnDestroy {
   adminUsers: User[] = [];
   allUsers: User[] = [];
 
+  selectedQuickResponse = "";
+  selectedSignature = "none";
+
+  quickResponses: QuickResponse[] = [
+    {
+      title: "Saludo inicial",
+      text: "Hola, gracias por contactarnos. Hemos recibido tu solicitud y la estamos revisando.",
+    },
+    {
+      title: "Solicitar más información",
+      text: "Para poder ayudarte mejor, necesitamos que nos proporciones más detalles sobre el problema que estás experimentando.",
+    },
+    {
+      title: "Problema resuelto",
+      text: "El problema ha sido resuelto. Por favor, verifica que todo esté funcionando correctamente y no dudes en contactarnos si necesitas ayuda adicional.",
+    },
+    {
+      title: "Escalamiento a técnico",
+      text: "Hemos escalado tu solicitud a nuestro equipo técnico especializado. Te contactarán en las próximas 24 horas.",
+    },
+    {
+      title: "Cierre de ticket",
+      text: "Consideramos que este ticket ha sido resuelto satisfactoriamente. Si tienes alguna pregunta adicional, no dudes en abrir un nuevo ticket.",
+    },
+  ];
+
+  editorApiKey = 'fv5pe5l2c10deu68ekllz4c0fkuqixnwl0y8k6gu8gjzbibu';
+
+  editorInit = {
+    height: 300,
+    menubar: false,
+    plugins: 'lists link table image code',
+    toolbar: 'undo redo | bold italic underline strikethrough | bullist numlist | table | link | image | code',
+    branding: false,
+    statusbar: false,
+    file_picker_types: 'image file',
+    file_picker_callback: (callback: any, value: any, meta: any) => {
+      const input = document.createElement('input');
+      input.setAttribute('type', 'file');
+
+      if (meta.filetype === 'image') {
+        input.setAttribute('accept', 'image/*');
+      } else {
+        input.setAttribute('accept', '*/*');
+      }
+
+      input.onchange = () => {
+        const file = input.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = reader.result as string;
+          if (meta.filetype === 'image') {
+            callback(result, { alt: file.name });
+          } else {
+            callback(result, { text: file.name });
+          }
+        };
+        reader.readAsDataURL(file);
+      };
+
+      input.click();
+    }
+  };
 
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private location = inject(Location);
-  private ticketService = inject(TicketService);
-  private userSessionService = inject(UserSessionService);
-
+  private ticketService: TicketService = inject(TicketService);
+  private userSessionService: UserSessionService = inject(UserSessionService);
   private destroy$ = new Subject<void>();
 
-ngOnInit() {
-  const id = this.route.snapshot.paramMap.get("id");
-  const allTickets = this.ticketService.getAllTickets();
-  this.ticket = allTickets.find((t) => t.id === id)!;
+  ngOnInit() {
+    const id = this.route.snapshot.paramMap.get("id");
+    const allTickets = this.ticketService.getAllTickets();
+    this.ticket = allTickets.find((t) => t.id === id)!;
 
-  if (!this.ticket) {
-    this.router.navigate(["/tickets"]);
-    return;
-  }
+    if (!this.ticket) {
+      this.router.navigate(["/tickets"]);
+      return;
+    }
 
-  this.userSessionService.usuarioActivo$
-    .pipe(takeUntil(this.destroy$))
-    .subscribe((user) => {
+    this.userSessionService.usuarioActivo$.pipe(takeUntil(this.destroy$)).subscribe((user) => {
       this.currentUser = user;
     });
 
- this.userSessionService.usuarios$
-  .pipe(takeUntil(this.destroy$))
-  .subscribe((usuarios: User[]) => {
-    this.allUsers = usuarios;
-    this.adminUsers = usuarios.filter((u) => u.role === "admin");
-  });
+    this.userSessionService.usuarios$.pipe(takeUntil(this.destroy$)).subscribe((usuarios: User[]) => {
+      this.allUsers = usuarios;
+      this.adminUsers = usuarios.filter((u) => u.role === "admin");
+    });
 
+    const storedResponses = localStorage.getItem(`ticket-responses-${this.ticket.id}`);
+    if (storedResponses) {
+      this.responses = JSON.parse(storedResponses).map((r: any) => ({
+        ...r,
+        timestamp: new Date(r.timestamp),
+      }));
+    } else {
+      this.responses = [
+        {
+          author: "Soporte Tecnico",
+          authorEmail: "soporte@empresa.cl",
+          message:
+            "Hemos recibido tu solicitud. Estamos revisando el problema y te contactaremos pronto con una solución.",
+          timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
+        },
+      ];
+      localStorage.setItem(`ticket-responses-${this.ticket.id}`, JSON.stringify(this.responses));
+    }
+  }
+ngAfterViewInit(): void {
+    document.addEventListener('click', this.handleImageClick);
+  }
+  ngOnDestroy() {
+    document.removeEventListener('click', this.handleImageClick);
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+handleImageClick = (event: MouseEvent) => {
+  const target = event.target as HTMLElement;
 
-  // 🔽 Intentar cargar respuestas guardadas en localStorage
-  const storedResponses = localStorage.getItem(`ticket-responses-${this.ticket.id}`);
-  if (storedResponses) {
-    this.responses = JSON.parse(storedResponses).map((r: any) => ({
-      ...r,
-      timestamp: new Date(r.timestamp), // Restaurar tipo Date
-    }));
-  } else {
-    // Si no hay respuestas guardadas, usar la respuesta inicial por defecto
-    this.responses = [
-      {
-        author: "Soporte Tecnico",
-        authorEmail: "soporte@empresa.cl",
-        message:
-          "Hemos recibido tu solicitud. Estamos revisando el problema y te contactaremos pronto con una solución.",
-        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-      },
-    ];
+  if (target.tagName === 'IMG' && target.closest('.response-content')) {
+    const image = target as HTMLImageElement;
 
-    // 🔽 Guardar en localStorage inmediatamente para persistencia futura
-    localStorage.setItem(
-      `ticket-responses-${this.ticket.id}`,
-      JSON.stringify(this.responses)
-    );
+    // 🔒 Evitar que se abra el enlace (si está dentro de un <a>)
+    const parentLink = image.closest('a');
+    if (parentLink) {
+      event.preventDefault(); // Evita abrir nueva pestaña
+    }
+
+    const src = image.src;
+    this.openImageModal(src);
+  }
+}
+onResponseContentClick(event: MouseEvent) {
+  const target = event.target as HTMLElement;
+  if (target.tagName.toLowerCase() === 'img') {
+    const src = (target as HTMLImageElement).src;
+    this.openImageModal(src);
   }
 }
 
 
-  ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
+  openImageModal(src: string) {
+    this.selectedImageUrl = src;
+    this.isImageModalOpen = true;
+  }
+
+  closeImageModal() {
+    this.selectedImageUrl = null;
+    this.isImageModalOpen = false;
+  }
+
+  insertQuickResponse() {
+    if (this.selectedQuickResponse) {
+      if (this.newResponse) {
+        this.newResponse += "<br><br>" + this.selectedQuickResponse;
+      } else {
+        this.newResponse = this.selectedQuickResponse;
+      }
+      this.selectedQuickResponse = "";
+    }
+  }
+
+  resetForm() {
+    this.newResponse = "";
+    this.selectedQuickResponse = "";
+    this.selectedSignature = "none";
   }
 
   goBack(): void {
@@ -98,20 +211,31 @@ ngOnInit() {
 addResponse() {
   if (!this.newResponse.trim() || !this.currentUser) return;
 
+  let finalMessage = this.newResponse;
+
+  // Envolver imágenes en enlaces
+  finalMessage = finalMessage.replace(
+    /<img[^>]*src="([^"]+)"[^>]*>/g,
+    '<a href="$1" target="_blank"><img src="$1" style="max-width: 100%; height: auto;" /></a>'
+  );
+
+  if (this.selectedSignature === "department") {
+    finalMessage += `<br><br>${"─".repeat(40)}<br>Atentamente,<br>Equipo de ${this.ticket.department}`;
+  }
+
   const newMsg = {
     author: this.currentUser.name,
     authorEmail: this.currentUser.email,
-    message: this.newResponse,
+    message: finalMessage,
     timestamp: new Date(),
   };
 
   this.responses.push(newMsg);
-
-  // Guardar en Local Storage
   localStorage.setItem(`ticket-responses-${this.ticket.id}`, JSON.stringify(this.responses));
-
-  this.newResponse = "";
+  this.saveChanges();
+  this.resetForm();
 }
+
 
 
   saveChanges() {
@@ -151,12 +275,11 @@ addResponse() {
     }).format(new Date(date));
   }
 
-getUserRole(email: string): 'admin' | 'user' | 'unknown' {
-  if (!email) return 'unknown';
-  const user = this.allUsers.find((u) => u.email === email);
-  return user?.role ?? 'unknown';
-}
-
+  getUserRole(email: string): "admin" | "user" | "unknown" {
+    if (!email) return "unknown";
+    const user = this.allUsers.find((u) => u.email === email);
+    return user?.role ?? "unknown";
+  }
 
   getInitials(name?: string): string {
     if (!name) return "?";
