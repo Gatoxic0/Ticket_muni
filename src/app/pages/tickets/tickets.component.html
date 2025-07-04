@@ -141,7 +141,7 @@
                 <div class="flex items-center gap-2">
                   <div 
                     class="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-medium"
-                    [ngClass]="getAssigneeColor(ticket.assignee)">
+                    [ngClass]="getAssigneeColor(getAssigneeName(ticket.assignee))">
                     {{ getAssigneeInitials(ticket.assignee) }}
                   </div>
                   <div class="text-sm">

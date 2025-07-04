@@ -155,38 +155,37 @@ export class TicketsComponent implements OnInit {
     return assignee.substring(0, 2).toUpperCase();
   }
 
-  getAssigneeName(assignee?: string): string {
-    if (!assignee) return 'Sin asignar';
+getAssigneeName(assignee?: string): string {
+  if (!assignee) return 'Sin asignar';
 
-    if (assignee.includes('@')) {
-      const name = assignee.split('@')[0];
-      return name.charAt(0).toUpperCase() + name.slice(1);
-    }
-
-    return assignee;
+  // Verifica si es un correo (asumiendo que el correo es un correo electrónico)
+  if (assignee.includes('@')) {
+    // Encuentra el usuario con ese correo
+    const user = this.allUsers.find(u => u.email === assignee);
+    return user ? user.name : assignee;  // Si encuentra el usuario, devuelve su nombre, sino devuelve el correo
   }
 
-  getAssigneeColor(assignee?: string): string {
-    if (!assignee) return 'bg-gray-400';
+  return assignee;
+}
 
-    const colors = [
-      'bg-blue-500',
-      'bg-green-500',
-      'bg-purple-500',
-      'bg-pink-500',
-      'bg-indigo-500',
-      'bg-red-500',
-      'bg-yellow-500',
-      'bg-teal-500',
-    ];
 
-    let hash = 0;
-    for (let i = 0; i < assignee.length; i++) {
-      hash = assignee.charCodeAt(i) + ((hash << 5) - hash);
-    }
+// Función para obtener el color según el rol del assignee
+getAssigneeColor(assignee?: string): string {
+  if (!assignee) return 'bg-gray-400'; // Si no hay assignee, se retorna el color gris
 
-    return colors[Math.abs(hash) % colors.length];
+  const role = this.getUserRole(assignee); // Utilizamos la función para obtener el rol
+
+  switch(role) {
+    case 'admin':
+      return 'admin-avatar'; // Clase que representa el color para admins
+    case 'user':
+      return 'user-avatar'; // Clase para usuarios
+    case 'unknown':
+    default:
+      return 'unknown-avatar'; // Clase para desconocidos
   }
+}
+
 
   getFormattedAssigneeName(assignee?: string): string {
     const name = this.getAssigneeName(assignee);
@@ -215,12 +214,16 @@ export class TicketsComponent implements OnInit {
     return `${firstLine}<br>${secondLine}`;
   }
 
-  // Función para obtener las iniciales del requester
-  getRequesterInitials(requesterName: string): string {
-    if (!requesterName) return '?';
-    const parts = requesterName.split(' ');
-    return parts.map(p => p[0]).join('').toUpperCase(); // Devuelve las iniciales del nombre
-  }
+// Función para obtener solo las dos primeras iniciales del requester
+getRequesterInitials(requesterName: string): string {
+  if (!requesterName) return '?';
+  const parts = requesterName.split(' ');
+  
+  // Toma las iniciales de los dos primeros nombres/apellidos
+  const initials = parts.slice(0, 2).map(p => p[0]).join('').toUpperCase(); 
+  return initials;
+}
+
 
   // Función para obtener el color según el rol del requester
   getRequesterColor(requesterName: string): string {

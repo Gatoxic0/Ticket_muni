@@ -377,6 +377,7 @@
   margin-top: 24px;
   padding-top: 24px;
 }
+
 .response-content img {
   max-width: 100%;
   height: auto;
@@ -388,6 +389,7 @@
 .response-content img:hover {
   transform: scale(1.02);
 }
+
 .image-modal-backdrop {
   position: fixed;
   top: 0;
@@ -406,6 +408,7 @@
   max-width: 90vw;
   max-height: 90vh;
 }
+
 .modal-image {
   max-width: 90vw;
   max-height: 90vh;
@@ -427,7 +430,6 @@
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
-
 
 .close-button {
   position: absolute;
@@ -600,7 +602,7 @@
   line-height: 1.5;
 }
 
-/* Enhanced Form Footer */
+/* Enhanced Form Footer - Mejorado para responsive */
 .enhanced-form-footer {
   display: flex;
   justify-content: space-between;
@@ -616,12 +618,14 @@
   flex-direction: column;
   gap: 12px;
   flex: 1;
+  min-width: 0;
 }
 
 .footer-right {
   display: flex;
   gap: 8px;
   align-items: center;
+  flex-shrink: 0;
 }
 
 /* Signature Section */
@@ -655,7 +659,7 @@
   margin: 0;
 }
 
-/* Status Section */
+/* Status Section - Mejorada para responsive */
 .status-section {
   display: flex;
   align-items: center;
@@ -667,6 +671,7 @@
   font-weight: 500;
   color: #374151;
   min-width: 120px;
+  flex-shrink: 0;
 }
 
 .status-select {
@@ -676,6 +681,34 @@
   font-size: 13px;
   background: white;
   color: #374151;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Asignee Section - Mejorada para responsive */
+.assignee-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.assignee-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+  min-width: 120px;
+  flex-shrink: 0;
+}
+
+.assignee-select {
+  padding: 6px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 13px;
+  background: white;
+  color: #374151;
+  flex: 1;
+  min-width: 0;
 }
 
 /* Buttons */
@@ -834,41 +867,74 @@
   background-color: #334155;
 }
 
-/* Responsive */
+/* Responsive - Breakpoint intermedio para evitar superposición */
+@media (max-width: 1200px) {
+  /* Reducir min-width de las etiquetas para evitar superposición */
+  .assignee-label,
+  .status-label {
+    min-width: 100px;
+  }
+}
+
+@media (max-width: 1100px) {
+  /* Reducir aún más para pantallas medianas */
+  .assignee-label,
+  .status-label {
+    min-width: 80px;
+    font-size: 12px;
+  }
+  .assignee-select,
+  .status-select {
+    font-size: 12px;
+  }
+}
+
 @media (max-width: 1024px) {
   .ticket-content {
     flex-direction: column;
     padding: 16px;
   }
-
   .sidebar {
     width: 100%;
   }
-
   .ticket-header {
     padding: 12px 16px;
   }
-
   .header-left {
     gap: 12px;
   }
-
   .ticket-meta {
     gap: 16px;
   }
-
   .formatting-toolbar {
     flex-wrap: wrap;
   }
-
   .enhanced-form-footer {
     flex-direction: column;
     align-items: stretch;
     gap: 16px;
   }
-
+  .footer-left {
+    gap: 16px;
+  }
   .footer-right {
     justify-content: flex-end;
+  }
+  /* Ambas secciones cambian a layout vertical */
+  .assignee-section,
+  .status-section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .assignee-label,
+  .status-label {
+    min-width: auto;
+    width: 100%;
+  }
+  .assignee-select,
+  .status-select {
+    width: 100%;
   }
 }
 
@@ -877,32 +943,60 @@
     align-items: flex-start;
     gap: 12px;
   }
-
   .header-right {
     align-self: stretch;
     justify-content: flex-start;
   }
-
   .signature-options {
     flex-direction: column;
     gap: 8px;
   }
-
+  .enhanced-form-footer {
+    padding: 12px;
+    gap: 12px;
+  }
+  .footer-left {
+    gap: 12px;
+  }
+  .assignee-section,
   .status-section {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
     gap: 6px;
   }
-
+  .assignee-label,
   .status-label {
+    font-size: 12px;
     min-width: auto;
   }
+  .assignee-select,
+  .status-select {
+    padding: 8px 12px;
+    font-size: 14px;
+    width: 100%;
+  }
+  .signature-section {
+    gap: 8px;
+  }
+  .signature-label {
+    font-size: 12px;
+  }
+  .signature-options {
+    flex-direction: column;
+    gap: 6px;
+  }
+  .signature-option {
+    font-size: 12px;
+  }
 }
+
 @media (max-width: 639px) {
-  #fecha_actualizacion{
-  margin-top: -3%;
-  margin-bottom: 3%;
+  #fecha_actualizacion {
+    margin-top: -3%;
+    margin-bottom: 3%;
+  }
 }
+
 @media (max-width: 535px) {
   .ticket-meta {
     display: flex;
@@ -911,7 +1005,6 @@
     justify-content: space-between;
     align-items: flex-start;
   }
-
   .meta-item {
     display: flex;
     flex-direction: column;
@@ -920,18 +1013,102 @@
     text-align: left;
     word-break: break-word;
     line-height: 1.4;
- }
-
-  .meta-item svg {
-    margin-bottom: 5px; /* Espacio entre el icono y el texto */
   }
-
+  .meta-item svg {
+    margin-bottom: 5px;
+  }
   .meta-text {
-    font-size: 0.9rem;  /* Ajusta el tamaño del texto */
-    line-height: 1.5;  /* Controla la separación entre líneas de texto */
-    white-space: normal; /* Permite el salto de línea cuando el texto es muy largo */
-    word-break: break-word; /* Asegura que el texto se divida correctamente */
+    font-size: 0.9rem;
+    line-height: 1.5;
+    white-space: normal;
+    word-break: break-word;
   }
 }
 
+@media (max-width: 480px) {
+  .enhanced-form-footer {
+    padding: 10px;
+    gap: 10px;
+  }
+  .assignee-section,
+  .status-section {
+    gap: 4px;
+  }
+  .assignee-label,
+  .status-label {
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .assignee-select,
+  .status-select {
+    padding: 10px 12px;
+    font-size: 13px;
+    border-radius: 6px;
+  }
+  .footer-right {
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+  }
+  .reset-button,
+  .send-button {
+    width: 100%;
+    padding: 10px 16px;
+    font-size: 14px;
+    justify-content: center;
+  }
+  .signature-options {
+    gap: 4px;
+  }
+  .signature-option {
+    font-size: 11px;
+    padding: 4px 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .assignee-select,
+  .status-select,
+  .quick-response-select {
+    min-height: 44px;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    padding-right: 40px;
+  }
+  .footer-left > * + * {
+    margin-top: 12px;
+  }
+  .assignee-label,
+  .status-label,
+  .signature-label {
+    font-weight: 600;
+    color: #1f2937;
+  }
+}
+
+@media (max-width: 360px) {
+  .enhanced-form-footer {
+    padding: 8px;
+  }
+  .assignee-select,
+  .status-select {
+    font-size: 12px;
+    padding: 8px 10px;
+    padding-right: 35px;
+  }
+  .assignee-label,
+  .status-label,
+  .signature-label {
+    font-size: 10px;
+  }
+  .reset-button,
+  .send-button {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
 }

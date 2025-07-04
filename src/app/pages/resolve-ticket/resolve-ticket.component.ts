@@ -207,7 +207,6 @@ onResponseContentClick(event: MouseEvent) {
   goBack(): void {
     this.location.back();
   }
-
 addResponse() {
   if (!this.newResponse.trim() || !this.currentUser) return;
 
@@ -231,6 +230,12 @@ addResponse() {
   };
 
   this.responses.push(newMsg);
+
+  // Asegurarte de que la asignación está guardada
+  if (this.ticket.assignee) {
+    this.ticket.assignee = this.ticket.assignee; // Asegúrate de que esté asignado
+  }
+
   localStorage.setItem(`ticket-responses-${this.ticket.id}`, JSON.stringify(this.responses));
   this.saveChanges();
   this.resetForm();
@@ -284,8 +289,9 @@ addResponse() {
   getInitials(name?: string): string {
     if (!name) return "?";
     const parts = name.trim().split(" ");
-    return parts.map((p) => p[0]).join("").toUpperCase();
-  }
+    const initials = parts.slice(0, 2).map(p => p[0]).join('').toUpperCase(); 
+    return initials;
+}
 
   getStatusText(status: string): string {
     const statusMap: { [key: string]: string } = {
