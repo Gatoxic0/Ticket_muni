@@ -5,38 +5,49 @@
       <div class="ticket-header">
         <div class="header-left">
           <div class="ticket-title">
-            <div class="ticket-id">Ticket #{{ ticket.id }}</div>
+            <div class="ticket-id">Ticket #{{ ticket.id }} </div>
           </div>
         </div>
+        <span 
+          class="text-xs font-semibold px-2 py-1 rounded"
+          [ngClass]="getStatusClass(ticket.status)">
+          {{ getStatusText(ticket.status) }}
+        </span>
       </div>
 
       <!-- Ticket Details Card -->
       <div class="ticket-card">
         <div class="card-header">
-          <h3>{{ ticket.title }}</h3>
-          <div class="ticket-meta">
-            <div class="meta-item">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                <circle cx="12" cy="7" r="4"/>
-              </svg>
-              {{ ticket.requesterName }}
-            </div>
-            <div class="meta-item">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                <circle cx="12" cy="10" r="3"/>
-              </svg>
-              {{ ticket.department }}
-            </div>
-            <div class="meta-item">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M9 11H5a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h4l3 3V8l-3 3z"/>
-                <path d="M22 9c0 1.11-.89 2-2 2s-2-.89-2-2 .89-2 2-2 2 .89 2 2z"/>
-              </svg>
-              {{ getCategoryText(ticket.category) }}
-            </div>
-          </div>
+         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+  <h3 class="text-lg font-semibold text-gray-900">{{ ticket.title }}</h3>
+  <span id="fecha_actualizacion" class="text-sm text-gray-500">
+    Actualizado {{ formatDate(ticket.updatedAt) }}
+  </span>
+      </div>
+  <div class="ticket-meta">
+  <div class="meta-item">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+      <circle cx="12" cy="7" r="4"/>
+    </svg>
+    <span class="meta-text">{{ ticket.requesterName }}</span>
+  </div>
+  <div class="meta-item">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+      <circle cx="12" cy="10" r="3"/>
+    </svg>
+    <span class="meta-text">{{ ticket.department }}</span>
+  </div>
+  <div class="meta-item">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M9 11H5a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h4l3 3V8l-3 3z"/>
+      <path d="M22 9c0 1.11-.89 2-2 2s-2-.89-2-2 .89-2 2-2 2 .89 2 2z"/>
+    </svg>
+    <span class="meta-text">{{ getCategoryText(ticket.category) }}</span>
+  </div>
+</div>
+
         </div>
       </div>
 

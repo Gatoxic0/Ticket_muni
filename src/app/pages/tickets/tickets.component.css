@@ -66,26 +66,41 @@
 .badge-orange {
   @apply bg-orange-100 text-orange-800;
 }
+.admin-avatar {
+  background-color: #ef4444; /* Rojo para admin */
+}
+
+.user-avatar {
+  background-color: #3b82f6; /* Azul para usuario */
+}
+
+.unknown-avatar {
+  background-color: #6b7280; /* Gris para desconocido */
+}
+
+/* Mobile card improvements */
+@media (max-width: 1023px) {
+  .bg-white:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transform: translateY(-1px);
+  }
+  
+  /* Improved spacing for mobile cards */
+  .space-y-4 > * + * {
+    margin-top: 1rem;
+  }
+}
 
 /* Table responsive adjustments */
 @media (max-width: 1024px) {
   .max-w-xs {
     max-width: 8rem;
   }
-
   .max-w-32 {
     max-width: 8rem;
   }
-
   .max-w-20 {
     max-width: 5rem;
-  }
-}
-
-/* Mobile card hover effects */
-@media (max-width: 1023px) {
-  .bg-white:hover {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   }
 }
 
@@ -134,8 +149,14 @@
   .text-sm {
     font-size: 0.875rem;
   }
-
   .text-xs {
     font-size: 0.75rem;
+  }
+}
+
+/* Enhanced mobile card styling */
+@media (max-width: 1023px) {
+  .cursor-pointer:active {
+    transform: scale(0.98);
   }
 }

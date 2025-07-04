@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { Observable, combineLatest } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
-
 import { TicketService } from '../../services/ticket.service';
 import { UserSessionService } from '../../services/user-session.service';
 import { Ticket } from '../../models/ticket.model';
@@ -18,9 +17,10 @@ import { User } from '../../models/user.model';
   styleUrls: ['./tickets.component.css'],
 })
 export class TicketsComponent implements OnInit {
-  tickets$: Observable<Ticket[]>;      // Observable con los tickets (filtrados)
+  tickets$: Observable<Ticket[]>; // Observable con los tickets (filtrados)
   currentUser$: Observable<User | null>;
   isAdmin$: Observable<boolean>;
+  allUsers: User[] = []; // Asegúrate de declarar la propiedad allUsers
 
   searchQuery = '';
   statusFilter = 'all';
@@ -34,8 +34,8 @@ export class TicketsComponent implements OnInit {
 
     // Inicializamos tickets$ para que cambie cuando cambie usuario, filtro o búsqueda
     this.tickets$ = combineLatest([
-      this.ticketService.getTickets(),    // Todos los tickets reactivos
-      this.currentUser$                   // Usuario actual reactivo
+      this.ticketService.getTickets(), // Todos los tickets reactivos
+      this.currentUser$,              // Usuario actual reactivo
     ]).pipe(
       map(([tickets, user]) => {
         if (!user) return [];
@@ -46,32 +46,36 @@ export class TicketsComponent implements OnInit {
     );
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    // Obtén todos los usuarios al iniciar
+    this.session.usuarios$.subscribe((usuarios: User[]) => {
+      this.allUsers = usuarios; // Asignamos todos los usuarios a 'allUsers'
+    });
+  }
 
   // Observable con tickets filtrados por búsqueda y estado (reactivo)
-getFilteredTickets(): Observable<Ticket[]> {
-  return this.tickets$.pipe(
-    map(tickets =>
-      tickets
-        .filter(ticket => {
-          const query = this.searchQuery.toLowerCase();
-          const matchesSearch =
-            ticket.title.toLowerCase().includes(query) ||
-            ticket.requesterEmail?.toLowerCase().includes(query) ||
-            ticket.id.includes(query) ||
-            (ticket.assignee?.toLowerCase().includes(query) ?? false);
+  getFilteredTickets(): Observable<Ticket[]> {
+    return this.tickets$.pipe(
+      map(tickets =>
+        tickets
+          .filter(ticket => {
+            const query = this.searchQuery.toLowerCase();
+            const matchesSearch =
+              ticket.title.toLowerCase().includes(query) ||
+              ticket.requesterEmail?.toLowerCase().includes(query) ||
+              ticket.id.includes(query) ||
+              (ticket.assignee?.toLowerCase().includes(query) ?? false);
 
-          const matchesStatus =
-            this.statusFilter === 'all' || ticket.status === this.statusFilter;
+            const matchesStatus =
+              this.statusFilter === 'all' || ticket.status === this.statusFilter;
 
-          return matchesSearch && matchesStatus;
-        })
-        // Ordenar por fecha DESC (más reciente primero)
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    )
-  );
-}
-
+            return matchesSearch && matchesStatus;
+          })
+          // Ordenar por fecha DESC (más reciente primero)
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      )
+    );
+  }
 
   getStatusCount(status: string): Observable<number> {
     return this.getFilteredTickets().pipe(
@@ -182,5 +186,60 @@ getFilteredTickets(): Observable<Ticket[]> {
     }
 
     return colors[Math.abs(hash) % colors.length];
+  }
+
+  getFormattedAssigneeName(assignee?: string): string {
+    const name = this.getAssigneeName(assignee);
+    const parts = name.split(' ');
+
+    if (parts.length <= 1) return name;
+
+    const mid = Math.ceil(parts.length / 2);
+    const firstLine = parts.slice(0, mid).join(' ');
+    const secondLine = parts.slice(mid).join(' ');
+
+    return `${firstLine}<br>${secondLine}`;
+  }
+
+  getFormattedRequesterName(name: string): string {
+    if (!name) return '';
+
+    const parts = name.split(' ');
+
+    if (parts.length <= 1) return name;
+
+    const mid = Math.ceil(parts.length / 2);
+    const firstLine = parts.slice(0, mid).join(' ');
+    const secondLine = parts.slice(mid).join(' ');
+
+    return `${firstLine}<br>${secondLine}`;
+  }
+
+  // Función para obtener las iniciales del requester
+  getRequesterInitials(requesterName: string): string {
+    if (!requesterName) return '?';
+    const parts = requesterName.split(' ');
+    return parts.map(p => p[0]).join('').toUpperCase(); // Devuelve las iniciales del nombre
+  }
+
+  // Función para obtener el color según el rol del requester
+  getRequesterColor(requesterName: string): string {
+    const role = this.getUserRole(requesterName); // Utilizamos la función de obtener el rol
+    
+    switch(role) {
+      case 'admin':
+        return 'admin-avatar'; // Clase que representa el color para admins
+      case 'user':
+        return 'user-avatar'; // Clase para usuarios
+      case 'unknown':
+      default:
+        return 'unknown-avatar'; // Clase para desconocidos
+    }
+  }
+
+  // Función para obtener el rol del requester basado en el nombre
+  getUserRole(requesterName: string): string {
+    const user = this.allUsers.find((u: User) => u.name === requesterName);
+    return user ? user.role : 'unknown'; // Si no se encuentra, se retorna 'unknown'
   }
 }
