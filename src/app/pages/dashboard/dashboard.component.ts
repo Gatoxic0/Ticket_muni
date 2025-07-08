@@ -32,10 +32,10 @@ export class DashboardComponent implements OnInit {
   ngOnInit(): void {
     this.usuario = this.userSession.getUsuarioActivo()
 
-    if (!this.usuario || this.usuario.role !== "admin") {
-      // 🔐 Redirigir si no es admin
-      this.router.navigate(["/tickets"])
+    if (!this.usuario || (this.usuario.role !== 'admin' && this.usuario.role !== 'support')) {
+      this.router.navigate(['/unauthorized']);
     }
+
   }
 
   private calculateStats(): Observable<TicketStats> {

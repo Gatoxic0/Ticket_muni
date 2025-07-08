@@ -94,9 +94,9 @@
                   </svg>
                 </button>
               </div>
-              <div class="message-body">
-                <p>{{ ticket.description }}</p>
-              </div>
+                <div class="message-body">
+                  <div class="response-content" [innerHTML]="ticket.description"></div>
+                </div>
               <div class="message-footer">
                 <span class="message-meta">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -224,7 +224,7 @@
                     </div>
                   </div>
 
-                  <!-- Asignar Ticket a un Administrador (solo admins) -->
+                  <!-- Asignar Ticket a un Administrador o soporte -->
                   <div *ngIf="currentUser?.role === 'admin' || currentUser?.role === 'support'" class="assignee-section">
                     <label class="assignee-label">Asignar a:</label>
                     <select [(ngModel)]="ticket.assignee" class="assignee-select">

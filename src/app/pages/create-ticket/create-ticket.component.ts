@@ -7,17 +7,60 @@ import { TicketService } from "../../services/ticket.service";
 import { User } from "../../models/user.model";
 import { UserSessionService } from "../../services/user-session.service";
 import { Ticket } from "../../models/ticket.model";
+import { EditorModule } from '@tinymce/tinymce-angular';
 
 @Component({
   selector: "app-create-ticket",
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, EditorModule],
   templateUrl: "./create-ticket.component.html",
   styleUrls: ["./create-ticket.component.css"],
 })
 export class CreateTicketComponent implements OnInit, OnDestroy {
   usuario: User | null = null;
   usuarioSub?: Subscription;
+
+  
+  editorApiKey = 'fv5pe5l2c10deu68ekllz4c0fkuqixnwl0y8k6gu8gjzbibu';
+
+  editorInit = {
+    height: 300,
+    menubar: false,
+    plugins: 'lists link table image code',
+    toolbar: 'undo redo | bold italic underline strikethrough | bullist numlist | table | link | image | code',
+    branding: false,
+    statusbar: false,
+    file_picker_types: 'image file',
+    file_picker_callback: (callback: any, value: any, meta: any) => {
+      const input = document.createElement('input');
+      input.setAttribute('type', 'file');
+
+      if (meta.filetype === 'image') {
+        input.setAttribute('accept', 'image/*');
+      } else {
+        input.setAttribute('accept', '*/*');
+      }
+
+      input.onchange = () => {
+        const file = input.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = reader.result as string;
+          if (meta.filetype === 'image') {
+            callback(result, { alt: file.name });
+          } else {
+            callback(result, { text: file.name });
+          }
+        };
+        reader.readAsDataURL(file);
+      };
+
+      input.click();
+    }
+  };
+
 
   formData = {
     title: "",
@@ -73,25 +116,27 @@ export class CreateTicketComponent implements OnInit, OnDestroy {
     this.usuarioSub?.unsubscribe();
   }
 
-  onSubmit(): void {
-    if (
-      !this.formData.title ||
-      !this.formData.description ||
-      !this.formData.category ||
-      !this.usuario
-    ) {
-      return;
-    }
-
-this.ticketService.addTicket({
-  title: this.formData.title,
-  description: this.formData.description,
-  category: this.formData.category,
-  priority: this.formData.priority,
-});
-
-    this.router.navigate(["/tickets"]);
+onSubmit(): void {
+  if (
+    !this.formData.title ||
+    !this.formData.description ||
+    !this.formData.category ||
+    !this.usuario
+  ) {
+    return;
   }
+
+  this.ticketService.addTicket({
+    title: this.formData.title,
+    description: this.formData.description,
+    category: this.formData.category,
+    priority: this.formData.priority,
+    createdAt: new Date(),   // opcional
+  });
+
+  this.router.navigate(["/tickets"]);
+}
+
 
   selectCategory(category: string): void {
     this.formData.category = category;
