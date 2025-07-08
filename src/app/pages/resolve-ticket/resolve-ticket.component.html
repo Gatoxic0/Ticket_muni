@@ -109,7 +109,7 @@
           </div>
 
 <!-- Responses -->
-<div *ngFor="let response of responses; let i = index" class="message response-message">
+<div #menuContainer class="message response-message" *ngFor="let response of responses; let i = index">
   <div class="message-avatar">
     <div 
       class="avatar-circle" 
@@ -131,20 +131,27 @@
       <span class="message-time">publicado {{ formatDate(response.timestamp) }}</span>
 
       <!-- Botón con menú contextual -->
-        <button class="message-reply-btn" (click)="toggleMenu(i)">...</button>
+ <!-- Botón para abrir menú -->
+  <button class="message-reply-btn" (click)="toggleMenu(i)">...</button>
 
-        <div *ngIf="openMenuIndex === i" class="absolute right-0 mt-2 w-32 bg-white border rounded shadow z-20">
-          <button 
-            class="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
-            (click)="editResponse(i)">
-            ✏️ Editar
-          </button>
-          <button 
-            class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-100"
-            (click)="deleteResponse(i)">
-            🗑️ Eliminar
-          </button>
-        </div>
+  <!-- Menú contextual -->
+  <div
+    *ngIf="openMenuIndex === i"
+    class="absolute right-0 mt-2 w-32 bg-white border rounded shadow z-20"
+  >
+    <button
+      class="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+      (click)="editResponse(i)"
+    >
+      ✏️ Editar
+    </button>
+    <button
+      class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-100"
+      (click)="deleteResponse(i)"
+    >
+      🗑️ Eliminar
+    </button>
+  </div>
     </div>
 
     <div class="message-body">

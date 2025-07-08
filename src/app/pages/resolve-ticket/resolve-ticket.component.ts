@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, inject, ElementRef, HostListener, QueryList, ViewChildren } from '@angular/core';
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, Router } from "@angular/router";
@@ -24,6 +24,9 @@ interface QuickResponse {
   styleUrls: ["./resolve-ticket.component.css"],
 })
 export class ResolveTicketComponent implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChildren('menuContainer') menuContainers!: QueryList<ElementRef>;
+  openMenuIndex: number | null = null;
+
   selectedImageUrl: string | null = null;
   isImageModalOpen = false;
   ticket!: Ticket;
@@ -35,6 +38,19 @@ export class ResolveTicketComponent implements OnInit, AfterViewInit, OnDestroy 
 
   selectedQuickResponse = "";
   selectedSignature = "none";
+
+  @HostListener('document:click', ['$event.target'])
+onClickOutside(target: HTMLElement) {
+  if (this.openMenuIndex !== null) {
+    const clickedInside = this.menuContainers.some(container =>
+      container.nativeElement.contains(target)
+    );
+
+    if (!clickedInside) {
+      this.openMenuIndex = null;
+    }
+  }
+}
 
   quickResponses: QuickResponse[] = [
     {
@@ -342,7 +358,6 @@ addResponse() {
     };
     return classMap[priority] || "priority-medium";
   }
-  openMenuIndex: number | null = null;
 
 toggleMenu(index: number) {
   this.openMenuIndex = this.openMenuIndex === index ? null : index;
@@ -350,12 +365,28 @@ toggleMenu(index: number) {
 
 editResponse(index: number) {
   const responseToEdit = this.responses[index];
+
+  // Verifica que el usuario actual sea el autor
+  if (responseToEdit.authorEmail !== this.currentUser?.email) {
+    console.warn("No tienes permiso para editar esta respuesta.");
+    return;
+  }
+
   this.newResponse = responseToEdit.message;
   this.responses.splice(index, 1); // Quita la respuesta para reemplazarla
   this.openMenuIndex = null;
 }
 
+
 deleteResponse(index: number) {
+  const responseToDelete = this.responses[index];
+
+  // Verifica que el usuario actual sea el autor
+  if (responseToDelete.authorEmail !== this.currentUser?.email) {
+    console.warn("No tienes permiso para eliminar esta respuesta.");
+    return;
+  }
+
   if (confirm("¿Estás seguro de que deseas eliminar esta respuesta?")) {
     this.responses.splice(index, 1);
     localStorage.setItem(`ticket-responses-${this.ticket.id}`, JSON.stringify(this.responses));
@@ -363,5 +394,6 @@ deleteResponse(index: number) {
   }
   this.openMenuIndex = null;
 }
+
 
 }
