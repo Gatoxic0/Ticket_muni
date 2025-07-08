@@ -30,7 +30,7 @@ export class ResolveTicketComponent implements OnInit, AfterViewInit, OnDestroy 
   responses: { author: string; authorEmail: string; message: string; timestamp: Date }[] = [];
   newResponse = "";
   currentUser: User | null = null;
-  adminUsers: User[] = [];
+  assignableUsers: User[] = [];
   allUsers: User[] = [];
 
   selectedQuickResponse = "";
@@ -122,7 +122,7 @@ export class ResolveTicketComponent implements OnInit, AfterViewInit, OnDestroy 
 
     this.userSessionService.usuarios$.pipe(takeUntil(this.destroy$)).subscribe((usuarios: User[]) => {
       this.allUsers = usuarios;
-      this.adminUsers = usuarios.filter((u) => u.role === "admin");
+      this.assignableUsers = usuarios.filter((u) => u.role === "admin" || u.role === "support");
     });
 
     const storedResponses = localStorage.getItem(`ticket-responses-${this.ticket.id}`);
@@ -135,7 +135,7 @@ export class ResolveTicketComponent implements OnInit, AfterViewInit, OnDestroy 
       this.responses = [
         {
           author: "Soporte Tecnico",
-          authorEmail: "soporte@empresa.cl",
+          authorEmail: "soporte@munimelipilla.cl",
           message:
             "Hemos recibido tu solicitud. Estamos revisando el problema y te contactaremos pronto con una solución.",
           timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
@@ -215,11 +215,13 @@ addResponse() {
   // Envolver imágenes en enlaces
   finalMessage = finalMessage.replace(
     /<img[^>]*src="([^"]+)"[^>]*>/g,
-    '<a href="$1" target="_blank"><img src="$1" style="max-width: 100%; height: auto;" /></a>'
+    '<a href="$1" target=""><img src="$1" style="max-width: 100%; height: auto;" /></a>'
   );
 
   if (this.selectedSignature === "department") {
-    finalMessage += `<br><br>${"─".repeat(40)}<br>Atentamente,<br>Equipo de ${this.ticket.department}`;
+    const responder = this.allUsers.find(u => u.email === this.currentUser?.email);
+    const responderDept = responder?.department || 'Departamento Desconocido';
+    finalMessage += `<br><br>${"─".repeat(40)}<br>Atentamente,<br>Equipo de ${responderDept}`;
   }
 
   const newMsg = {
@@ -231,15 +233,15 @@ addResponse() {
 
   this.responses.push(newMsg);
 
-  // Asegurarte de que la asignación está guardada
   if (this.ticket.assignee) {
-    this.ticket.assignee = this.ticket.assignee; // Asegúrate de que esté asignado
+    this.ticket.assignee = this.ticket.assignee;
   }
 
   localStorage.setItem(`ticket-responses-${this.ticket.id}`, JSON.stringify(this.responses));
   this.saveChanges();
   this.resetForm();
 }
+
 
 
 
@@ -280,7 +282,7 @@ addResponse() {
     }).format(new Date(date));
   }
 
-  getUserRole(email: string): "admin" | "user" | "unknown" {
+  getUserRole(email: string): "admin" | "user" | "support" | "unknown" {
     if (!email) return "unknown";
     const user = this.allUsers.find((u) => u.email === email);
     return user?.role ?? "unknown";
@@ -340,4 +342,26 @@ addResponse() {
     };
     return classMap[priority] || "priority-medium";
   }
+  openMenuIndex: number | null = null;
+
+toggleMenu(index: number) {
+  this.openMenuIndex = this.openMenuIndex === index ? null : index;
+}
+
+editResponse(index: number) {
+  const responseToEdit = this.responses[index];
+  this.newResponse = responseToEdit.message;
+  this.responses.splice(index, 1); // Quita la respuesta para reemplazarla
+  this.openMenuIndex = null;
+}
+
+deleteResponse(index: number) {
+  if (confirm("¿Estás seguro de que deseas eliminar esta respuesta?")) {
+    this.responses.splice(index, 1);
+    localStorage.setItem(`ticket-responses-${this.ticket.id}`, JSON.stringify(this.responses));
+    this.saveChanges();
+  }
+  this.openMenuIndex = null;
+}
+
 }

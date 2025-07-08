@@ -39,7 +39,7 @@ export class TicketsComponent implements OnInit {
     ]).pipe(
       map(([tickets, user]) => {
         if (!user) return [];
-        if (user.role === 'admin') return tickets; // Admin ve todo
+        if (user.role === 'admin' || user.role === 'support') return tickets; //Admin y soporte ven todos los tickets
         // Usuario normal ve solo sus tickets
         return tickets.filter(t => t.requesterEmail === user.email);
       })

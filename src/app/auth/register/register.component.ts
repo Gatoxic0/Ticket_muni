@@ -58,12 +58,13 @@ async registrar() {
   }
 
   // Validación de email
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@munimelipilla\.cl$/;
   if (!emailRegex.test(this.user.email)) {
-    this.mensaje = 'Por favor, ingrese un correo electrónico válido.';
+    this.mensaje = 'Solo se permiten correos del dominio @munimelipilla.cl.';
     this.isSuccess = false;
     return;
   }
+
 
   // Validación de contraseña
   if (this.user.password.length < 6) {  // Puedes ajustar la longitud mínima según lo que necesites
@@ -76,8 +77,8 @@ async registrar() {
   const usuarioLogueado = this.userSessionService.getUsuarioActivo();
 
   // Verificar si el usuario logueado es un administrador
-  if (this.user.role === 'admin' && usuarioLogueado?.role !== 'admin') {
-    this.mensaje = '**Sin permisos de admin**, no puede registrar nuevo usuario con rol de administrador.';
+  if (usuarioLogueado?.role !== 'admin') {
+    this.mensaje = '**Sin permisos**, solo un administrador puede registrar nuevos usuarios';
     this.isSuccess = false;
     return;
   }

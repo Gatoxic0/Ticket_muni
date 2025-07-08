@@ -40,4 +40,9 @@ export class HeaderComponent implements OnInit {
   ngOnDestroy(): void {
     this.sub?.unsubscribe();
   }
+  
+  goToRegister(): void {
+  this.router.navigate(['/register']);
+}
+
 }

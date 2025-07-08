@@ -108,36 +108,51 @@
             </div>
           </div>
 
-          <!-- Responses -->
-          <div *ngFor="let response of responses" class="message response-message">
-            <div class="message-avatar">
-              <div 
-                class="avatar-circle" 
-                [ngClass]="{
-                  'admin-avatar': getUserRole(response.authorEmail) === 'admin',
-                  'user-avatar': getUserRole(response.authorEmail) === 'user',
-                  'unknown-avatar': getUserRole(response.authorEmail) === 'unknown'
-                }"
-              >
-                {{ getInitials(response.author) }}
-              </div>
-            </div>
-            <div class="message-content">
-              <div class="message-header">
-                <div class="author-info">
-                  <span class="message-author">{{ response.author }}</span>
-                  <span class="message-email">{{ response.authorEmail }}</span>
-                </div>
-                <span class="message-time">publicado {{ formatDate(response.timestamp) }}</span>
-                <button class="message-reply-btn">...</button>
-              </div>
-              <div class="message-body">
-                <div class="response-content"
-                 [innerHTML]="response.message">
-                </div>
-              </div>
-            </div>
-          </div>
+<!-- Responses -->
+<div *ngFor="let response of responses; let i = index" class="message response-message">
+  <div class="message-avatar">
+    <div 
+      class="avatar-circle" 
+      [ngClass]="{
+        'admin-avatar': getUserRole(response.authorEmail) === 'admin',
+        'user-avatar': getUserRole(response.authorEmail) === 'user',
+        'unknown-avatar': getUserRole(response.authorEmail) === 'unknown'
+      }"
+    >
+      {{ getInitials(response.author) }}
+    </div>
+  </div>
+  <div class="message-content">
+    <div class="message-header">
+      <div class="author-info">
+        <span class="message-author">{{ response.author }}</span>
+        <span class="message-email">{{ response.authorEmail }}</span>
+      </div>
+      <span class="message-time">publicado {{ formatDate(response.timestamp) }}</span>
+
+      <!-- Botón con menú contextual -->
+        <button class="message-reply-btn" (click)="toggleMenu(i)">...</button>
+
+        <div *ngIf="openMenuIndex === i" class="absolute right-0 mt-2 w-32 bg-white border rounded shadow z-20">
+          <button 
+            class="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+            (click)="editResponse(i)">
+            ✏️ Editar
+          </button>
+          <button 
+            class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-100"
+            (click)="deleteResponse(i)">
+            🗑️ Eliminar
+          </button>
+        </div>
+    </div>
+
+    <div class="message-body">
+      <div class="response-content" [innerHTML]="response.message"></div>
+    </div>
+  </div>
+</div>
+
 
           <!-- Enhanced Response Form -->
           <div class="response-form">
@@ -190,34 +205,35 @@
                           type="radio" 
                           name="signature" 
                           value="department"
-                          [(ngModel)]="selectedSignature"
-                        />
-                        <span>Firma del Departamento ({{ ticket.department }})</span>
+                          [(ngModel)]="selectedSignature"/>
+                          <span>Firma del Departamento ({{ currentUser?.department || 'Departamento' }})</span>
                       </label>
                     </div>
                   </div>
+                  
+                  <!-- Solo visible para administradores -->
+                    <div *ngIf="currentUser?.role === 'admin' || currentUser?.role === 'support'" class="footer-left">
+                    <!-- Ticket Status -->
+                    <div class="status-section">
+                      <label class="status-label">Estado del Ticket:</label>
+                      <select [(ngModel)]="ticket.status" class="status-select">
+                        <option value="open">Abrir (actual)</option>
+                        <option value="in-progress">En Progreso</option>
+                        <option value="resolved">Resuelto</option>
+                      </select>
+                    </div>
+                  </div>
 
-                  <!-- Ticket Status -->
-                  <div class="status-section">
-                    <label class="status-label">Estado del Ticket:</label>
-                    <select [(ngModel)]="ticket.status" class="status-select">
-                      <option value="open">Abrir (actual)</option>
-                      <option value="in-progress">En Progreso</option>
-                      <option value="resolved">Resuelto</option>
+                  <!-- Asignar Ticket a un Administrador (solo admins) -->
+                  <div *ngIf="currentUser?.role === 'admin' || currentUser?.role === 'support'" class="assignee-section">
+                    <label class="assignee-label">Asignar a:</label>
+                    <select [(ngModel)]="ticket.assignee" class="assignee-select">
+                      <option value="" disabled>Seleccionar administrador</option>
+                      <option *ngFor="let user of assignableUsers" [value]="user.email">
+                        {{ user.name }} ({{ user.role === 'admin' ? 'Administrador' : 'Soporte' }})
+                      </option>
                     </select>
                   </div>
-                </div>
-                <!-- Asignar Ticket a un Administrador -->
-                <div class="assignee-section">
-                  <label class="assignee-label">Asignar a:</label>
-                  <select [(ngModel)]="ticket.assignee" class="assignee-select">
-                    <option value="" disabled>Seleccionar administrador</option>
-                    <option *ngFor="let admin of adminUsers" [value]="admin.email">
-                      {{ admin.name }}
-                    </option>
-                  </select>
-                </div>
-
                 <div class="footer-right">
                   <button 
                     type="button"

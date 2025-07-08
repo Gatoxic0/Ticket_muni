@@ -1,4 +1,10 @@
 /* Base responsive styles */
+div#avatar-requester {
+    min-width: 1.5rem
+24px
+;
+    min-height: 1.5rem;
+}
 .filter-button {
   transition: all 0.2s ease-in-out;
 }

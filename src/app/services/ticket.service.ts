@@ -49,7 +49,7 @@ addTicket(ticketData: Partial<Ticket>): void {
     status: 'open',
     requesterName: currentUser.name,  
     requesterEmail: currentUser.email,  
-    assignee: 'soporte@empresa.cl',
+    assignee: 'soporte@munimelipilla.cl',
     createdAt: new Date(),
     updatedAt: new Date(),
     department: currentUser.department,
