@@ -75,7 +75,9 @@ div#avatar-requester {
 .admin-avatar {
   background-color: #ef4444; /* Rojo para admin */
 }
-
+.support-avatar {
+  background-color: #00c500; /* Verde para soporte */
+}
 .user-avatar {
   background-color: #3b82f6; /* Azul para usuario */
 }

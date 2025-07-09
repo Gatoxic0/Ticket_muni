@@ -74,6 +74,7 @@
                 class="avatar-circle" 
                 [ngClass]="{
                   'admin-avatar': getUserRole(ticket.requesterEmail) === 'admin',
+                  'support-avatar': getUserRole(ticket.requesterEmail) === 'support',
                   'user-avatar': getUserRole(ticket.requesterEmail) === 'user',
                   'unknown-avatar': getUserRole(ticket.requesterEmail) === 'unknown'
                 }"
@@ -115,6 +116,7 @@
       class="avatar-circle" 
       [ngClass]="{
         'admin-avatar': getUserRole(response.authorEmail) === 'admin',
+        'support-avatar': getUserRole(ticket.requesterEmail) === 'support',
         'user-avatar': getUserRole(response.authorEmail) === 'user',
         'unknown-avatar': getUserRole(response.authorEmail) === 'unknown'
       }"
@@ -219,7 +221,7 @@
                     </div>
                   </div>
                   
-                  <!-- Solo visible para administradores -->
+                  <!-- Solo visible para administradores y soporte -->
                     <div *ngIf="currentUser?.role === 'admin' || currentUser?.role === 'support'" class="footer-left">
                     <!-- Ticket Status -->
                     <div class="status-section">

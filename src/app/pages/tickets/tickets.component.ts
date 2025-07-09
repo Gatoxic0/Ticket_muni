@@ -180,6 +180,8 @@ getAssigneeColor(assignee?: string): string {
   switch(role) {
     case 'admin':
       return 'admin-avatar'; // Clase que representa el color para admins
+    case 'support':
+      return 'support-avatar'; // Clase que representa el color para support
     case 'user':
       return 'user-avatar'; // Clase para usuarios
     case 'unknown':
@@ -231,15 +233,17 @@ getRequesterInitials(requesterName: string): string {
   getRequesterColor(requesterName: string): string {
     const role = this.getUserRole(requesterName); // Utilizamos la función de obtener el rol
     
-    switch(role) {
-      case 'admin':
-        return 'admin-avatar'; // Clase que representa el color para admins
-      case 'user':
-        return 'user-avatar'; // Clase para usuarios
-      case 'unknown':
-      default:
-        return 'unknown-avatar'; // Clase para desconocidos
-    }
+  switch(role) {
+    case 'admin':
+      return 'admin-avatar'; // Clase que representa el color para admins
+    case 'support':
+      return 'support-avatar'; // Clase que representa el color para support
+    case 'user':
+      return 'user-avatar'; // Clase para usuarios
+    case 'unknown':
+    default:
+      return 'unknown-avatar'; // Clase para desconocidos
+  }
   }
 
   // Función para obtener el rol del requester basado en el nombre

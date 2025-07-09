@@ -292,7 +292,9 @@
 .admin-avatar {
   background-color: #ef4444;
 }
-
+.support-avatar {
+  background-color: #00c500; /* Verde para soporte */
+}
 .user-avatar {
   background-color: #3b82f6;
 }
