@@ -63,7 +63,9 @@ export class TicketsComponent implements OnInit {
             const matchesSearch =
               ticket.title.toLowerCase().includes(query) ||
               ticket.requesterEmail?.toLowerCase().includes(query) ||
+              ticket.requesterName.toLowerCase().includes(query) ||
               ticket.id.includes(query) ||
+              this.getAssigneeName(ticket.assignee).toLowerCase().includes(query) ||
               (ticket.assignee?.toLowerCase().includes(query) ?? false);
 
             const matchesStatus =
