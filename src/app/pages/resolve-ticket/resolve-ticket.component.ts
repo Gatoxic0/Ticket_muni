@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, OnDestroy, inject, ElementRef, HostListener, QueryList, ViewChildren } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, inject, ElementRef, ChangeDetectorRef , HostListener, QueryList, ViewChildren } from '@angular/core';
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, Router } from "@angular/router";
@@ -39,9 +39,9 @@ export class ResolveTicketComponent implements OnInit, AfterViewInit, OnDestroy 
   selectedQuickResponse = "";
   selectedSignature = "none";
 
-  @HostListener('document:click', ['$event.target'])
+@HostListener('document:click', ['$event.target'])
 onClickOutside(target: HTMLElement) {
-  if (this.openMenuIndex !== null) {
+  if (this.openMenuIndex !== null && this.menuContainers?.length) {
     const clickedInside = this.menuContainers.some(container =>
       container.nativeElement.contains(target)
     );
@@ -51,6 +51,7 @@ onClickOutside(target: HTMLElement) {
     }
   }
 }
+
 
   quickResponses: QuickResponse[] = [
     {
@@ -121,6 +122,7 @@ onClickOutside(target: HTMLElement) {
   private ticketService: TicketService = inject(TicketService);
   private userSessionService: UserSessionService = inject(UserSessionService);
   private destroy$ = new Subject<void>();
+  private cdr = inject(ChangeDetectorRef);
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get("id");
@@ -361,7 +363,9 @@ addResponse() {
 
 toggleMenu(index: number) {
   this.openMenuIndex = this.openMenuIndex === index ? null : index;
+  this.cdr.detectChanges(); // 🔄 fuerza actualización para que menuContainers se actualice
 }
+
 
 editResponse(index: number) {
   const responseToEdit = this.responses[index];
@@ -395,5 +399,16 @@ deleteResponse(index: number) {
   this.openMenuIndex = null;
 }
 
+@HostListener('window:scroll')
+onScroll() {
+  if (this.openMenuIndex !== null) {
+    this.openMenuIndex = null;
+  }
+}
+updateTicketOnly() {
+  this.ticket.updatedAt = new Date();
+  this.ticketService.updateTicket(this.ticket);
+  alert("Ticket actualizado sin publicar respuesta.");
+}
 
 }

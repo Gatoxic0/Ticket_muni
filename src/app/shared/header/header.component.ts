@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, HostListener, OnInit, OnDestroy, ViewChild} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { User } from '../../models/user.model';
@@ -12,14 +12,16 @@ import { Subscription } from 'rxjs';
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.css'],
 })
-export class HeaderComponent implements OnInit {
+export class HeaderComponent implements OnInit, OnDestroy {
   usuario: User | null = null;
   showUserMenu = false;
   private sub!: Subscription;
+  @ViewChild('menuWrapper') menuWrapperRef!: ElementRef;
 
   constructor(
     private userSession: UserSessionService,
-    private router: Router
+    private router: Router,
+    private elRef: ElementRef // 👉 necesario para detectar clics fuera
   ) {}
 
   ngOnInit(): void {
@@ -37,12 +39,20 @@ export class HeaderComponent implements OnInit {
     this.router.navigate(['/login']);
   }
 
+  goToRegister(): void {
+    this.router.navigate(['/register']);
+  }
+
   ngOnDestroy(): void {
     this.sub?.unsubscribe();
   }
-  
-  goToRegister(): void {
-  this.router.navigate(['/register']);
-}
 
+  // 👇 Detectar clics fuera del child "relative"
+  @HostListener('document:click', ['$event'])
+  onClickOutside(event: MouseEvent): void {
+    const clickedInside = this.menuWrapperRef?.nativeElement.contains(event.target);
+    if (!clickedInside) {
+      this.showUserMenu = false;
+    }
+  }
 }

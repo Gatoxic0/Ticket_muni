@@ -724,6 +724,9 @@
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
+  height: 35.5px;
+  display: flex;
+  align-items: center;
 }
 
 .reset-button:hover {
@@ -754,6 +757,12 @@
 .send-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+button.update-button {
+    height: 35.5px;
+    display: flex;
+    align-items: center;
 }
 
 /* Sidebar */
@@ -1092,6 +1101,11 @@
     color: #1f2937;
   }
 }
+  @media (max-width: 556px) {
+    .reset-button,.update-button,.send-button{
+      height: 59px !important;
+    }
+  }
 
 @media (max-width: 360px) {
   .enhanced-form-footer {
