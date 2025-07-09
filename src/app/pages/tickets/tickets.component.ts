@@ -24,7 +24,9 @@ export class TicketsComponent implements OnInit {
 
   searchQuery = '';
   statusFilter = 'all';
-
+  filterBy: string = 'title'; // predeterminado
+  tickets: Ticket[] = []; // lista original
+  filteredTickets: Ticket[] = []; // lista filtrada
   constructor(
     private ticketService: TicketService,
     private session: UserSessionService
@@ -54,30 +56,113 @@ export class TicketsComponent implements OnInit {
   }
 
   // Observable con tickets filtrados por búsqueda y estado (reactivo)
-  getFilteredTickets(): Observable<Ticket[]> {
-    return this.tickets$.pipe(
-      map(tickets =>
-        tickets
-          .filter(ticket => {
-            const query = this.searchQuery.toLowerCase();
-            const matchesSearch =
-              ticket.title.toLowerCase().includes(query) ||
-              ticket.requesterEmail?.toLowerCase().includes(query) ||
-              ticket.requesterName.toLowerCase().includes(query) ||
-              ticket.id.includes(query) ||
-              this.getAssigneeName(ticket.assignee).toLowerCase().includes(query) ||
-              (ticket.assignee?.toLowerCase().includes(query) ?? false);
+getFilteredTickets(): Observable<Ticket[]> {
+  return this.tickets$.pipe(
+    map(tickets =>
+      tickets
+        .filter(ticket => {
+          const query = this.searchQuery.toLowerCase();
+          const field = this.filterBy;
+          let valueToCheck = '';
 
-            const matchesStatus =
-              this.statusFilter === 'all' || ticket.status === this.statusFilter;
+          switch (field) {
+            case 'id':
+              valueToCheck = ticket.id?.toString().toLowerCase() || '';
+              break;
+            case 'title':
+              valueToCheck = ticket.title.toLowerCase();
+              break;
+            case 'requesterEmail':
+              valueToCheck = ticket.requesterEmail?.toLowerCase() || '';
+              break;
+            case 'requesterName':
+              valueToCheck = ticket.requesterName?.toLowerCase() || '';
+              break;
+            case 'assigneeName':
+              valueToCheck = this.getAssigneeName(ticket.assignee)?.toLowerCase() || '';
+              break;
+            case 'assigneeEmail':
+              valueToCheck = ticket.assignee?.toLowerCase() || '';
+              break;
+            case 'status':
+              valueToCheck = ticket.status?.toLowerCase() || '';
+              break;
+            case 'department':
+              valueToCheck = ticket.department?.toLowerCase() || '';
+              break;
+            case 'priority':
+              valueToCheck = ticket.priority?.toLowerCase() || '';
+              break;
+            default:
+              // Sin campo seleccionado: busca en todo
+              valueToCheck = [
+                ticket.title,
+                ticket.requesterEmail,
+                ticket.requesterName,
+                ticket.id,
+                this.getAssigneeName(ticket.assignee),
+                ticket.assignee,
+                ticket.status,
+                ticket.department,
+                ticket.priority
+              ]
+                .map(val => (val || '').toString().toLowerCase())
+                .join(' ');
+          }
 
-            return matchesSearch && matchesStatus;
-          })
-          // Ordenar por fecha DESC (más reciente primero)
-          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-      )
-    );
-  }
+          const matchesSearch = valueToCheck.includes(query);
+          const matchesStatus =
+            this.statusFilter === 'all' || ticket.status === this.statusFilter;
+
+          return matchesSearch && matchesStatus;
+        })
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    )
+  );
+}
+
+
+filterTickets() {
+  const query = this.searchQuery.toLowerCase();
+
+  this.filteredTickets = this.tickets.filter(ticket => {
+    let valueToCheck = '';
+
+    switch (this.filterBy) {
+      case 'title':
+        valueToCheck = ticket.title.toLowerCase();
+        break;
+      case 'requesterEmail':
+        valueToCheck = ticket.requesterEmail?.toLowerCase() || '';
+        break;
+      case 'requesterName':
+        valueToCheck = ticket.requesterName?.toLowerCase() || '';
+        break;
+      case 'id':
+        valueToCheck = ticket.id?.toString().toLowerCase() || '';
+        break;
+      case 'assigneeName':
+        valueToCheck = this.getAssigneeName(ticket.assignee)?.toLowerCase() || '';
+        break;
+      case 'assigneeEmail':
+        valueToCheck = ticket.assignee?.toLowerCase() || '';
+        break;
+      case 'status':
+        valueToCheck = ticket.status?.toLowerCase() || '';
+        break;
+      case 'department':
+        valueToCheck = ticket.department?.toLowerCase() || '';
+        break;
+      case 'priority':
+        valueToCheck = ticket.priority?.toLowerCase() || '';
+        break;
+      default:
+        valueToCheck = '';
+    }
+
+    return valueToCheck.includes(query);
+  });
+}
 
   getStatusCount(status: string): Observable<number> {
     return this.getFilteredTickets().pipe(

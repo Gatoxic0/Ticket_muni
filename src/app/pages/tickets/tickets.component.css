@@ -1,10 +1,9 @@
 /* Base responsive styles */
 div#avatar-requester {
-    min-width: 1.5rem
-24px
-;
+    min-width: 1.5rem24px;
     min-height: 1.5rem;
 }
+
 .filter-button {
   transition: all 0.2s ease-in-out;
 }
@@ -20,6 +19,64 @@ div#avatar-requester {
 
 .search-input:focus {
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Select Filter Styles */
+.select-filtro {
+  /* Dimensiones y espaciado */
+  min-width: 200px;
+  padding: 8px 32px 8px 12px;
+
+  /* Bordes y esquinas */
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+
+  /* Tipografía */
+  font-size: 14px;
+  font-weight: 400;
+  color: #374151;
+
+  /* Fondo */
+  background-color: white;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 8px center;
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
+
+  /* Cursor y transiciones */
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+
+  /* Remover apariencia por defecto */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+.select-filtro:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.select-filtro:hover {
+  border-color: #9ca3af;
+}
+
+.select-filtro option {
+  padding: 8px 12px;
+  font-size: 14px;
+  color: #374151;
+  background-color: white;
+}
+
+.select-filtro option:hover {
+  background-color: #f3f4f6;
+}
+
+.select-filtro option:disabled {
+  color: #9ca3af;
+  font-weight: 500;
 }
 
 /* Action Button Styles - Desktop */
@@ -72,12 +129,15 @@ div#avatar-requester {
 .badge-orange {
   @apply bg-orange-100 text-orange-800;
 }
+
 .admin-avatar {
   background-color: #ef4444; /* Rojo para admin */
 }
+
 .support-avatar {
   background-color: #00c500; /* Verde para soporte */
 }
+
 .user-avatar {
   background-color: #3b82f6; /* Azul para usuario */
 }
@@ -92,7 +152,7 @@ div#avatar-requester {
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     transform: translateY(-1px);
   }
-  
+    
   /* Improved spacing for mobile cards */
   .space-y-4 > * + * {
     margin-top: 1rem;
@@ -159,6 +219,12 @@ div#avatar-requester {
   }
   .text-xs {
     font-size: 0.75rem;
+  }
+  
+  /* Select responsive adjustments */
+  .select-filtro {
+    min-width: 100%;
+    width: 100%;
   }
 }
 
