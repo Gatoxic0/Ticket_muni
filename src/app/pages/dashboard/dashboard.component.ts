@@ -12,6 +12,7 @@ import { BaseChartDirective } from 'ng2-charts';
 import { provideCharts } from 'ng2-charts';
 import { FormsModule } from '@angular/forms';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
+import { ViewChild } from '@angular/core';
 
 @Component({
   selector: "app-dashboard",
@@ -24,6 +25,7 @@ import ChartDataLabels from 'chartjs-plugin-datalabels';
 export class DashboardComponent implements OnInit {
   public ChartDataLabels = ChartDataLabels;
   public innerWidth: number = window.innerWidth;
+  @ViewChild(BaseChartDirective) chart?: BaseChartDirective;
   usuario: User | null = null
   tickets$: Observable<Ticket[]>
   stats$: Observable<TicketStats>
@@ -166,6 +168,7 @@ export class DashboardComponent implements OnInit {
 
   onResize() {
     this.innerWidth = window.innerWidth;
+    this.chart?.chart?.update();
   }
 
   ngOnInit(): void {
