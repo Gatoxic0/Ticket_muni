@@ -23,6 +23,7 @@ import ChartDataLabels from 'chartjs-plugin-datalabels';
 })
 export class DashboardComponent implements OnInit {
   public ChartDataLabels = ChartDataLabels;
+  public innerWidth: number = window.innerWidth;
   usuario: User | null = null
   tickets$: Observable<Ticket[]>
   stats$: Observable<TicketStats>
@@ -77,11 +78,11 @@ export class DashboardComponent implements OnInit {
         display: false
       },
       datalabels: {
-        anchor: 'end',
-        align: 'end',
-        color: '#1e293b',
+        anchor: 'center',
+        align: 'center',
+        clamp: true,
+        color: '#000',
         font: (ctx: any) => {
-          // Responsivo: fuente más pequeña en móvil
           if (window.innerWidth < 700) {
             return { weight: 'bold', size: 10 };
           }
@@ -89,11 +90,8 @@ export class DashboardComponent implements OnInit {
         },
         formatter: (value: any) => value,
         display: (ctx: any) => {
-          // Ocultar datalabels en móvil
-          if (window.innerWidth < 700) return false;
-          // Ocultar si la barra es muy pequeña
-          if (typeof ctx.formattedValue === 'number' && ctx.formattedValue < 1) return false;
-          return true;
+          if (typeof ctx.dataset.data[ctx.dataIndex] === 'number' && ctx.dataset.data[ctx.dataIndex] > 0) return true;
+          return false;
         },
         padding: {
           top: 4,
@@ -108,7 +106,14 @@ export class DashboardComponent implements OnInit {
         },
         ticks: {
           color: '#64748b',
-          font: { size: 15 }
+          font: (ctx: any) => {
+            if (window.innerWidth < 700) {
+              return { size: 10 };
+            }
+            return { size: 15 };
+          },
+          maxRotation: 30,
+          minRotation: 0
         },
         // Más espacio entre barras (eliminar de escalas y elementos.bar, solo se usa en datasets)
       },
@@ -118,7 +123,12 @@ export class DashboardComponent implements OnInit {
         },
         ticks: {
           color: '#64748b',
-          font: { size: 15 }
+          font: (ctx: any) => {
+            if (window.innerWidth < 700) {
+              return { size: 10 };
+            }
+            return { size: 15 };
+          }
         }
       }
     },
@@ -147,6 +157,15 @@ export class DashboardComponent implements OnInit {
     this.stats$ = this.calculateStats();
     this.ticketsByMonth$ = this.calculateTicketsByMonth();
     this.ticketsByUser$ = this.calculateTicketsByUserFiltered();
+    window.addEventListener('resize', this.onResize.bind(this));
+  }
+
+  ngOnDestroy(): void {
+    window.removeEventListener('resize', this.onResize.bind(this));
+  }
+
+  onResize() {
+    this.innerWidth = window.innerWidth;
   }
 
   ngOnInit(): void {
@@ -160,10 +179,10 @@ export class DashboardComponent implements OnInit {
       this.ticketsByMonthChartData = {
         labels: data.map(d => d.month),
         datasets: [
-          { label: 'Total', data: data.map(d => d.total), backgroundColor: '#60a5fa', datalabels: { anchor: 'center', align: 'center', clamp: true } },
-          { label: 'Resueltos', data: data.map(d => d.resolved), backgroundColor: '#34d399', datalabels: { anchor: 'center', align: 'center', clamp: true } },
-          { label: 'Abiertos', data: data.map(d => d.open), backgroundColor: '#fbbf24', datalabels: { anchor: 'center', align: 'center', clamp: true } },
-          { label: 'En Progreso', data: data.map(d => d.inProgress), backgroundColor: '#f59e42', datalabels: { anchor: 'center', align: 'center', clamp: true } },
+          { label: 'Total', data: data.map(d => d.total), backgroundColor: '#60a5fa', datalabels: { anchor: 'center', align: 'center', clamp: true, color: '#000', display: (ctx: any) => ctx.dataset.data[ctx.dataIndex] > 0 } },
+          { label: 'Resueltos', data: data.map(d => d.resolved), backgroundColor: '#34d399', datalabels: { anchor: 'center', align: 'center', clamp: true, color: '#000', display: (ctx: any) => ctx.dataset.data[ctx.dataIndex] > 0 } },
+          { label: 'Abiertos', data: data.map(d => d.open), backgroundColor: '#fbbf24', datalabels: { anchor: 'center', align: 'center', clamp: true, color: '#000', display: (ctx: any) => ctx.dataset.data[ctx.dataIndex] > 0 } },
+          { label: 'En Progreso', data: data.map(d => d.inProgress), backgroundColor: '#f59e42', datalabels: { anchor: 'center', align: 'center', clamp: true, color: '#000', display: (ctx: any) => ctx.dataset.data[ctx.dataIndex] > 0 } },
         ]
       };
       if (this.selectedMonthYear) {

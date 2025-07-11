@@ -111,13 +111,13 @@
           </select>
         </div>
       </div>
-      <div class="w-full overflow-x-auto" style="min-height:300px;">
+      <div class="w-full overflow-x-auto">
         <canvas baseChart
           [data]="ticketsByMonthChartData"
           [options]="chartOptions"
           [type]="'bar'"
           [plugins]="[ChartDataLabels]"
-          height="80">
+          [height]="innerWidth < 700 ? 320 : 180">
         </canvas>
       </div>
     </div>
@@ -134,13 +134,13 @@
           </select>
         </div>
       </div>
-      <div class="w-full overflow-x-auto" style="min-height:300px;">
+      <div class="w-full overflow-x-auto">
         <canvas baseChart
           [data]="ticketsByUserChartData"
           [options]="chartOptions"
           [type]="'bar'"
           [plugins]="[ChartDataLabels]"
-          height="80">
+          [height]="innerWidth < 700 ? 320 : 180">
         </canvas>
       </div>
     </div>
@@ -157,13 +157,13 @@
           </select>
         </div>
       </div>
-      <div class="w-full overflow-x-auto" style="min-height:300px;">
+      <div class="w-full overflow-x-auto">
         <canvas baseChart
           [data]="avgResolutionTimeChartData"
           [options]="chartOptions"
           [type]="'bar'"
           [plugins]="[ChartDataLabels]"
-          height="80">
+          [height]="innerWidth < 700 ? 320 : 180">
         </canvas>
       </div>
     </div>
