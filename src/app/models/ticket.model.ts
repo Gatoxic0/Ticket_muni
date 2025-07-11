@@ -26,7 +26,6 @@ export interface TicketStats {
   open: number;
   inProgress: number;
   resolved: number;
-  closed: number;
   urgent: number;
   high: number;
 }

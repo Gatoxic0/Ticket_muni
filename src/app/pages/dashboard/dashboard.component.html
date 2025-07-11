@@ -1,117 +1,170 @@
 <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
   <div class="space-y-6">
     <!-- Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" *ngIf="stats$ | async as stats">
-      <div class="bg-white rounded-lg border border-gray-200 p-6 border-l-4 border-l-blue-500">
-        <div class="flex items-center justify-between">
+    <ng-container *ngIf="stats$ | async as stats">
+      <div class="dashboard-stats-grid">
+        <div class="dashboard-stats-card dashboard-stats-card-blue">
           <div>
-            <p class="text-sm font-medium text-gray-600">Total de Tickets</p>
-            <p class="text-3xl font-bold text-gray-900">{{ stats.total }}</p>
-            <p class="text-xs text-gray-500 mt-1">Todos los estados</p>
+            <p class="dashboard-stats-title">Total de Tickets</p>
+            <p class="dashboard-stats-value">{{ stats.total }}</p>
+            <p class="dashboard-stats-desc">Todos los estados</p>
           </div>
-          <div class="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
-            <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-            </svg>
+        </div>
+        <div class="dashboard-stats-card dashboard-stats-card-orange">
+          <div>
+            <p class="dashboard-stats-title">Tickets Abiertos</p>
+            <p class="dashboard-stats-value">{{ stats.open }}</p>
+            <p class="dashboard-stats-desc">Requieren atención</p>
+          </div>
+        </div>
+        <div class="dashboard-stats-card dashboard-stats-card-yellow">
+          <div>
+            <p class="dashboard-stats-title">En Progreso</p>
+            <p class="dashboard-stats-value">{{ stats.inProgress }}</p>
+            <p class="dashboard-stats-desc">Siendo trabajados</p>
+          </div>
+        </div>
+        <div class="dashboard-stats-card dashboard-stats-card-green">
+          <div>
+            <p class="dashboard-stats-title">Tickets Resueltos</p>
+            <p class="dashboard-stats-value">{{ stats.resolved }}</p>
+            <p class="dashboard-stats-desc">Ya solucionados</p>
           </div>
         </div>
       </div>
+    </ng-container>
+  </div>
 
-      <div class="bg-white rounded-lg border border-gray-200 p-6 border-l-4 border-l-orange-500">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm font-medium text-gray-600">Tickets Abiertos</p>
-            <p class="text-3xl font-bold text-gray-900">{{ stats.open }}</p>
-            <p class="text-xs text-gray-500 mt-1">Requieren atención</p>
-          </div>
-          <div class="h-12 w-12 bg-orange-100 rounded-lg flex items-center justify-center">
-            <svg class="h-6 w-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-          </div>
+  <!-- Tablas -->
+  <div class="mt-10">
+    <h2 class="dashboard-section-title">Tickets por mes</h2>
+    <table class="dashboard-table">
+      <thead>
+        <tr>
+          <th>Mes/Año</th>
+          <th>Total</th>
+          <th>Resueltos</th>
+          <th>Abiertos</th>
+          <th>En Progreso</th>
+        </tr>
+      </thead>
+      <tbody *ngIf="ticketsByMonth$ | async as ticketsByMonth">
+        <tr *ngFor="let item of ticketsByMonth">
+          <td>{{ item.month }}</td>
+          <td>{{ item.total }}</td>
+          <td>{{ item.resolved }}</td>
+          <td>{{ item.open }}</td>
+          <td>{{ item.inProgress }}</td>
+        </tr>
+        <tr *ngIf="ticketsByMonth.length === 0">
+          <td colspan="5" class="dashboard-table-empty">No hay tickets</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="mt-10">
+    <h2 class="dashboard-section-title">Tickets asignados y resueltos por usuario</h2>
+    <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 1rem;">
+      <label for="monthFilterUser" class="text-sm font-medium text-gray-600 mr-2">Filtrar por:</label>
+      <select id="monthFilterUser" [(ngModel)]="selectedMonthYearUser" (change)="onMonthYearUserChange()" class="rounded border border-gray-300 px-2 py-1">
+        <option value="">Todos</option>
+        <option *ngFor="let my of availableMonthYearsUser" [value]="my">{{ my }}</option>
+      </select>
+    </div>
+    <table class="dashboard-table">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Rol</th>
+          <th>Asignados</th>
+          <th>Resueltos</th>
+          <th>% Resolución</th>
+        </tr>
+      </thead>
+      <tbody *ngIf="ticketsByUser$ | async as ticketsByUser">
+        <tr *ngFor="let user of ticketsByUser">
+          <td>{{ user.name }}</td>
+          <td>{{ user.role }}</td>
+          <td>{{ user.assigned }}</td>
+          <td>{{ user.resolved }}</td>
+          <td>{{ user.resolutionRate }}%</td>
+        </tr>
+        <tr *ngIf="ticketsByUser.length === 0">
+          <td colspan="5" class="dashboard-table-empty">No hay tickets asignados</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Filtro de mes/año y gráficos en grid responsivo -->
+  <div class="dashboard-charts-grid gap-8 mt-10">
+    <!-- Filtro de mes/año para el gráfico de tickets por mes -->
+    <div class="dashboard-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h2 class="dashboard-card-title">Gráfico: Tickets por mes</h2>
+        <div>
+          <label for="monthFilter" class="text-sm font-medium text-gray-600 mr-2">Filtrar por:</label>
+          <select id="monthFilter" [(ngModel)]="selectedMonthYear" (change)="onMonthYearChange()" class="rounded border border-gray-300 px-2 py-1">
+            <option value="">Todos</option>
+            <option *ngFor="let my of availableMonthYears" [value]="my">{{ my }}</option>
+          </select>
         </div>
       </div>
-
-      <div class="bg-white rounded-lg border border-gray-200 p-6 border-l-4 border-l-yellow-500">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm font-medium text-gray-600">En Progreso</p>
-            <p class="text-3xl font-bold text-gray-900">{{ stats.inProgress }}</p>
-            <p class="text-xs text-gray-500 mt-1">Siendo trabajados</p>
-          </div>
-          <div class="h-12 w-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-            <svg class="h-6 w-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-            </svg>
-          </div>
-        </div>
+      <div class="w-full overflow-x-auto" style="min-height:300px;">
+        <canvas baseChart
+          [data]="ticketsByMonthChartData"
+          [options]="chartOptions"
+          [type]="'bar'"
+          [plugins]="[ChartDataLabels]"
+          height="80">
+        </canvas>
       </div>
-
-      <div class="bg-white rounded-lg border border-gray-200 p-6 border-l-4 border-l-green-500">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm font-medium text-gray-600">Tickets Resueltos</p>
-            <p class="text-3xl font-bold text-gray-900">{{ stats.resolved }}</p>
-            <p class="text-xs text-gray-500 mt-1">Ya solucionados</p>
-          </div>
-          <div class="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
-            <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-        </div>
-</div>
     </div>
 
-    <!-- Recent Tickets -->
-    <div class="bg-white rounded-lg border border-gray-200">
-      <div class="px-6 py-4 border-b border-gray-200">
-        <h3 class="text-lg font-semibold">Tickets Recientes</h3>
+    <!-- Gráfico: Tickets por usuario -->
+    <div class="dashboard-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h2 class="dashboard-card-title">Gráfico: Tickets por usuario</h2>
+        <div>
+          <label for="monthFilterUserChart" class="text-sm font-medium text-gray-600 mr-2">Filtrar por:</label>
+          <select id="monthFilterUserChart" [(ngModel)]="selectedMonthYearUser" (change)="onMonthYearUserChange()" class="rounded border border-gray-300 px-2 py-1">
+            <option value="">Todos</option>
+            <option *ngFor="let my of availableMonthYearsUser" [value]="my">{{ my }}</option>
+          </select>
+        </div>
       </div>
-      <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ticket</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Asunto</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">De</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            <tr *ngFor="let ticket of getRecentTickets() | async" class="hover:bg-gray-50 transition-colors">
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span class="font-medium text-blue-600">#{{ ticket.id }}</span>
-              </td>
-              <td class="px-6 py-4">
-                <p class="font-medium text-gray-900 truncate max-w-xs">{{ ticket.title }}</p>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <p class="font-medium text-gray-900">{{ ticket.requesterName }}</p>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span 
-                  class="badge"
-                  [ngClass]="getStatusColor(ticket.status)">
-                  {{ getStatusText(ticket.status) }}
-                </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                {{ formatDate(ticket.createdAt) }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="w-full overflow-x-auto" style="min-height:300px;">
+        <canvas baseChart
+          [data]="ticketsByUserChartData"
+          [options]="chartOptions"
+          [type]="'bar'"
+          [plugins]="[ChartDataLabels]"
+          height="80">
+        </canvas>
       </div>
+    </div>
 
-      <!-- Empty state -->
-      <div *ngIf="(getRecentTickets() | async)?.length === 0" class="p-8 text-center">
-        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-        </svg>
-        <p class="mt-2 text-gray-500">No hay tickets recientes</p>
+    <!-- Gráfico: Tiempo promedio de resolución por usuario (ocupa todo el ancho) -->
+    <div class="dashboard-card dashboard-card-full">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h2 class="dashboard-card-title">Gráfico: Tiempo promedio de resolución por usuario</h2>
+        <div>
+          <label for="monthFilterAvgTime" class="text-sm font-medium text-gray-600 mr-2">Filtrar por:</label>
+          <select id="monthFilterAvgTime" [(ngModel)]="selectedMonthYearAvgTime" (change)="onMonthYearAvgTimeChange()" class="rounded border border-gray-300 px-2 py-1">
+            <option value="">Todos</option>
+            <option *ngFor="let my of availableMonthYearsAvgTime" [value]="my">{{ my }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="w-full overflow-x-auto" style="min-height:300px;">
+        <canvas baseChart
+          [data]="avgResolutionTimeChartData"
+          [options]="chartOptions"
+          [type]="'bar'"
+          [plugins]="[ChartDataLabels]"
+          height="80">
+        </canvas>
       </div>
     </div>
   </div>
