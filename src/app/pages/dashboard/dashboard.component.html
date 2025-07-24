@@ -65,8 +65,8 @@
 
   <div class="mt-10">
     <h2 class="dashboard-section-title">Tickets asignados y resueltos por usuario</h2>
-    <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 1rem;">
-      <label for="monthFilterUser" class="text-sm font-medium text-gray-600 mr-2">Filtrar por:</label>
+    <div style="display: flex; justify-content: flex-start; align-items: center; margin-bottom: 1rem;">
+      <label for="monthFilterUser" class="text-sm font-medium text-gray-600 mr-2">Filtrar por fecha:</label>
       <select id="monthFilterUser" [(ngModel)]="selectedMonthYearUser" (change)="onMonthYearUserChange()" class="rounded border border-gray-300 px-2 py-1">
         <option value="">Todos</option>
         <option *ngFor="let my of availableMonthYearsUser" [value]="my">{{ my }}</option>
@@ -100,11 +100,11 @@
   <!-- Filtro de mes/año y gráficos en grid responsivo -->
   <div class="dashboard-charts-grid gap-8 mt-10">
     <!-- Filtro de mes/año para el gráfico de tickets por mes -->
-    <div class="dashboard-card">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+    <div class="dashboard-card dashboard-card-mes">
+      <div style="display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-start; margin-bottom: 1rem;">
         <h2 class="dashboard-card-title">Gráfico: Tickets por mes</h2>
         <div>
-          <label for="monthFilter" class="text-sm font-medium text-gray-600 mr-2">Filtrar por:</label>
+          <label for="monthFilter" class="text-sm font-medium text-gray-600 mr-2">Filtrar por fecha:</label>
           <select id="monthFilter" [(ngModel)]="selectedMonthYear" (change)="onMonthYearChange()" class="rounded border border-gray-300 px-2 py-1">
             <option value="">Todos</option>
             <option *ngFor="let my of availableMonthYears" [value]="my">{{ my }}</option>
@@ -122,30 +122,47 @@
     </div>
 
     <!-- Gráfico: Tickets por usuario -->
-    <div class="dashboard-card">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-        <h2 class="dashboard-card-title">Gráfico: Tickets por usuario</h2>
-        <div>
-          <label for="monthFilterUserChart" class="text-sm font-medium text-gray-600 mr-2">Filtrar por:</label>
-          <select id="monthFilterUserChart" [(ngModel)]="selectedMonthYearUser" (change)="onMonthYearUserChange()" class="rounded border border-gray-300 px-2 py-1">
-            <option value="">Todos</option>
-            <option *ngFor="let my of availableMonthYearsUser" [value]="my">{{ my }}</option>
-          </select>
+    <div class="dashboard-card dashboard-card-usuario">
+      <div style="display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-start; margin-bottom: 1rem;">
+        <h2 class="dashboard-card-title">Gráfico: Tickets por soporte</h2>
+        <div class="dashboard-filtros">
+          <div class="dashboard-filtro-soporte">
+            <label for="userFilter" class="text-sm font-medium text-gray-600 mr-2">Filtrar por soporte:</label>
+            <select id="userFilter" [(ngModel)]="selectedUser" (change)="onUserChange()" class="rounded border border-gray-300 px-2 py-1">
+              <option value="">Todos</option>
+              <option *ngFor="let user of availableUsers" [value]="user.email">{{ user.name }}</option>
+            </select>
+          </div>
+          <div class="dashboard-filtro-fecha">
+            <label for="monthFilterUserChart" class="text-sm font-medium text-gray-600 mr-2">Filtrar por fecha:</label>
+            <select id="monthFilterUserChart" [(ngModel)]="selectedMonthYearUser" (change)="onMonthYearUserChange()" class="rounded border border-gray-300 px-2 py-1">
+              <option value="">Todos</option>
+              <option *ngFor="let my of availableMonthYearsUser" [value]="my">{{ my }}</option>
+            </select>
+          </div>
         </div>
       </div>
-      <div class="w-full overflow-x-auto" style="min-height:180px; min-height: 320px;">
-        <canvas baseChart
-          [data]="ticketsByUserChartData"
-          [options]="chartOptions"
-          [type]="'bar'"
-          [plugins]="[ChartDataLabels]">
-        </canvas>
+      <div *ngIf="ticketsByUser$ | async as ticketsByUser">
+        <div *ngFor="let user of ticketsByUser" class="mb-8">
+          <h3 class="font-semibold mb-2">{{ user.name }} ({{ user.role }})</h3>
+          <div class="w-full overflow-x-auto" style="min-height:180px; min-height: 220px;">
+            <canvas baseChart
+              [data]="user.chartData"
+              [options]="chartOptions"
+              [type]="'bar'"
+              [plugins]="[ChartDataLabels]">
+            </canvas>
+          </div>
+        </div>
+        <div *ngIf="ticketsByUser.length === 0">
+          <p class="dashboard-table-empty">No hay tickets asignados</p>
+        </div>
       </div>
     </div>
 
     <!-- Gráfico: Tiempo promedio de resolución por usuario (ocupa todo el ancho) -->
-    <div class="dashboard-card dashboard-card-full">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+    <div class="dashboard-card dashboard-card-resolucion dashboard-card-full">
+      <div style="display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-start; margin-bottom: 1rem;">
         <h2 class="dashboard-card-title">Gráfico: Tiempo promedio de resolución por usuario</h2>
         <div>
           <label for="monthFilterAvgTime" class="text-sm font-medium text-gray-600 mr-2">Filtrar por:</label>

@@ -43,7 +43,8 @@ export class DashboardComponent implements OnInit {
     role: string,
     assigned: number,
     resolved: number,
-    resolutionRate: number
+    resolutionRate: number,
+    chartData: any
   }[]>;
 
   // Datos para gráficos
@@ -149,6 +150,8 @@ export class DashboardComponent implements OnInit {
   selectedMonthYearUser: string = '';
   availableMonthYearsAvgTime: string[] = [];
   selectedMonthYearAvgTime: string = '';
+  selectedUser: string = '';
+  availableUsers: { email: string, name: string }[] = [];
 
   constructor(
     private userSession: UserSessionService,
@@ -226,6 +229,11 @@ export class DashboardComponent implements OnInit {
       });
       this.applyMonthYearAvgTimeFilter();
     });
+    // Inicializar availableUsers
+    const usuarios = this.userSession.getUsuarios();
+    this.availableUsers = usuarios
+      .filter(u => u.role === 'admin' || u.role === 'support')
+      .map(u => ({ email: u.email, name: u.name }));
   }
 
   private calculateStats(): Observable<TicketStats> {
@@ -318,17 +326,23 @@ export class DashboardComponent implements OnInit {
     role: string,
     assigned: number,
     resolved: number,
-    resolutionRate: number
+    resolutionRate: number,
+    chartData: any // <-- agregamos esta propiedad
   }[]> {
     return this.tickets$.pipe(
       map((tickets) => {
         let filteredTickets = tickets;
+        // Filtro por mes/año
         if (this.selectedMonthYearUser) {
-          filteredTickets = tickets.filter(ticket => {
+          filteredTickets = filteredTickets.filter(ticket => {
             const date = new Date(ticket.createdAt);
             const month = `${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
             return month === this.selectedMonthYearUser;
           });
+        }
+        // Filtro por usuario
+        if (this.selectedUser) {
+          filteredTickets = filteredTickets.filter(ticket => ticket.assignee === this.selectedUser);
         }
         const userStats: { [email: string]: { assigned: number, resolved: number } } = {};
         filteredTickets.forEach(ticket => {
@@ -340,13 +354,28 @@ export class DashboardComponent implements OnInit {
         const usuarios = this.userSession.getUsuarios();
         return Object.entries(userStats).map(([email, stats]) => {
           const user = usuarios.find(u => u.email === email);
+          const assigned = stats.assigned;
+          const resolved = stats.resolved;
+          const pending = assigned - resolved;
+          const resolutionRate = assigned > 0 ? Math.round((resolved / assigned) * 100) : 0;
           return {
             name: user ? user.name : email,
             email,
             role: user ? user.role : 'N/A',
-            assigned: stats.assigned,
-            resolved: stats.resolved,
-            resolutionRate: stats.assigned > 0 ? Math.round((stats.resolved / stats.assigned) * 100) : 0
+            assigned,
+            resolved,
+            resolutionRate,
+            chartData: {
+              labels: ['Asignados', 'Resueltos', 'Pendientes'],
+              datasets: [
+                {
+                  label: 'Tickets',
+                  data: [assigned, resolved, pending],
+                  backgroundColor: ['#FF9800', '#43A047', '#EF4444'],
+                  hoverBackgroundColor: ['#FB8C00', '#388E3C', '#c53030'],
+                }
+              ]
+            }
           };
         });
       })
@@ -369,6 +398,10 @@ export class DashboardComponent implements OnInit {
         ]
       };
     });
+  }
+
+  onUserChange() {
+    this.applyMonthYearUserFilter();
   }
 
   // --- Tiempo promedio de resolución por usuario con filtro ---
