@@ -5,7 +5,7 @@
       <div class="flex flex-col space-y-4">
         <!-- Filter Buttons -->
         <div class="flex flex-wrap gap-2">
-          <button 
+          <button id="boton-todos"
             class="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md border transition-colors"
             [ngClass]="statusFilter === 'all' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'"
             (click)="statusFilter = 'all'">
@@ -14,7 +14,7 @@
               {{ getTotalCount() | async }}
             </span>
           </button>
-          <button 
+          <button id="boton-abiertos"
             class="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md border transition-colors"
             [ngClass]="statusFilter === 'open' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'"
             (click)="statusFilter = 'open'">
@@ -24,7 +24,7 @@
               {{ getStatusCount('open') | async }}
             </span>
           </button>
-          <button 
+          <button id="boton-en-progreso"
             class="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md border transition-colors"
             [ngClass]="statusFilter === 'in-progress' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'"
             (click)="statusFilter = 'in-progress'">
@@ -34,7 +34,7 @@
               {{ getStatusCount('in-progress') | async }}
             </span>
           </button>
-          <button 
+          <button id="boton-resueltos"
             class="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md border transition-colors"
             [ngClass]="statusFilter === 'resolved' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'"
             (click)="statusFilter = 'resolved'">
@@ -238,7 +238,7 @@
           <div class="text-sm text-gray-500 mb-2">Asignado a:</div>
           <div class="flex items-center gap-3">
             <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium"
-                 [ngClass]="getAssigneeColor(ticket.assignee)">
+                 [ngClass]="getAssigneeColor(getAssigneeName(ticket.assignee))">
               {{ getAssigneeInitials(ticket.assignee) }}
             </div>
             <span class="font-medium text-gray-900">{{ getAssigneeName(ticket.assignee) }}</span>

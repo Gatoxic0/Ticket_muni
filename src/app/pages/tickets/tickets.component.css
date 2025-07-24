@@ -3,7 +3,9 @@ div#avatar-requester {
     min-width: 1.5rem24px;
     min-height: 1.5rem;
 }
-
+main.max-w-full.mx-auto.px-2.sm\:px-4.lg\:px-6.py-4 {
+  min-width: 28rem;
+}
 .filter-button {
   transition: all 0.2s ease-in-out;
 }
@@ -227,7 +229,28 @@ div#avatar-requester {
     width: 100%;
   }
 }
-
+@media (max-width: 550px) {
+  #boton-todos{
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  }
+  #boton-abiertos{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+  }
+  #boton-en-progreso{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+  }
+  #boton-resueltos{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+  }
+}
 /* Enhanced mobile card styling */
 @media (max-width: 1023px) {
   .cursor-pointer:active {
