@@ -12,7 +12,7 @@ import { BaseChartDirective } from 'ng2-charts';
 import { provideCharts } from 'ng2-charts';
 import { FormsModule } from '@angular/forms';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-import { ViewChild } from '@angular/core';
+import { ViewChildren, QueryList } from '@angular/core';
 
 @Component({
   selector: "app-dashboard",
@@ -25,7 +25,8 @@ import { ViewChild } from '@angular/core';
 export class DashboardComponent implements OnInit {
   public ChartDataLabels = ChartDataLabels;
   public innerWidth: number = window.innerWidth;
-  @ViewChild(BaseChartDirective) chart?: BaseChartDirective;
+  @ViewChildren(BaseChartDirective) charts!: QueryList<BaseChartDirective>;
+  private resizeListener: any;
   usuario: User | null = null
   tickets$: Observable<Ticket[]>
   stats$: Observable<TicketStats>
@@ -162,16 +163,17 @@ export class DashboardComponent implements OnInit {
     this.stats$ = this.calculateStats();
     this.ticketsByMonth$ = this.calculateTicketsByMonth();
     this.ticketsByUser$ = this.calculateTicketsByUserFiltered();
-    window.addEventListener('resize', this.onResize.bind(this));
+    this.resizeListener = this.onResize.bind(this);
+    window.addEventListener('resize', this.resizeListener);
   }
 
   ngOnDestroy(): void {
-    window.removeEventListener('resize', this.onResize.bind(this));
+    window.removeEventListener('resize', this.resizeListener);
   }
 
   onResize() {
     this.innerWidth = window.innerWidth;
-    this.chart?.chart?.update();
+    this.charts?.forEach(chart => chart.chart?.resize());
   }
 
   ngOnInit(): void {
